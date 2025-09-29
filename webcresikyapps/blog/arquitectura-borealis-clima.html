@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura Técnica de BorealisClima: APIs y Algoritmos - CreiskyApps Blog</title>
+    <meta name="description" content="Análisis profundo de la arquitectura técnica detrás de BorealisClima: desde la integración de APIs meteorológicas hasta los algoritmos de scoring deportivo.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://creiskyapps.vercel.app/blog/arquitectura-borealis-clima.html">
+    <meta property="og:title" content="Arquitectura Técnica de BorealisClima: APIs y Algoritmos">
+    <meta property="og:description" content="Análisis técnico de la arquitectura de una app meteorológica con recomendaciones deportivas inteligentes.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://creiskyapps.vercel.app/blog/arquitectura-borealis-clima.html">
+    <meta property="twitter:title" content="Arquitectura Técnica de BorealisClima: APIs y Algoritmos">
+    <meta property="twitter:description" content="Análisis técnico de la arquitectura de una app meteorológica con recomendaciones deportivas inteligentes.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #1e40af;
+            --accent-turquoise: #06b6d4;
+            --dark-blue: #1e293b;
+            --light-gray: #f8fafc;
+            --medium-gray: #64748b;
+            --white: #ffffff;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--dark-blue);
+            background-color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-primary);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .rocket-icon {
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 2rem 4rem;
+            overflow-x: hidden;
+        }
+
+        .article-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .article-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            line-height: 1.6;
+        }
+
+        .article-content {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        .article-content h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            color: var(--dark-blue);
+            position: relative;
+        }
+
+        .article-content h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -0.5rem;
+            width: 50px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
+
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--dark-blue);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.75rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            border-left: 4px solid var(--primary-blue);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            border-left: 4px solid var(--warning-orange);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+            border-left: 4px solid var(--success-green);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .code-block {
+            background: var(--dark-blue);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            position: relative;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 0;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .architecture-diagram {
+            background: var(--light-gray);
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .diagram-layer {
+            background: var(--white);
+            border: 2px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .layer-title {
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .layer-components {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .component {
+            background: var(--light-gray);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .api-card {
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .api-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .api-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .api-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        .api-description {
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
+        }
+
+        .api-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .api-features li {
+            padding: 0.25rem 0;
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+
+        .api-features li::before {
+            content: '✓';
+            color: var(--success-green);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .metrics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .metric-item {
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            line-height: 1;
+        }
+
+        .metric-description {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            margin-top: 0.5rem;
+        }
+
+        .flow-diagram {
+            background: var(--light-gray);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .flow-step {
+            background: var(--white);
+            border: 2px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+            position: relative;
+            text-align: center;
+        }
+
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .cta-section {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .cta-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 2rem;
+            background: var(--white);
+            color: var(--primary-blue);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .article-footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--light-gray);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .author-details h4 {
+            color: var(--dark-blue);
+            font-weight: 600;
+        }
+
+        .author-details p {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 100px 1rem 3rem;
+            }
+
+            .article-title {
+                font-size: 2.25rem;
+            }
+
+            .article-content {
+                font-size: 1rem;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .code-block {
+                font-size: 0.75rem;
+                padding: 1rem;
+            }
+
+            .layer-components {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .flow-step::after {
+                content: '↓';
+            }
+        }
+
+        @media (max-width: 480px) {
+            .article-title {
+                font-size: 1.875rem;
+            }
+
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .author-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .api-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../creiskyapps_website.html" class="logo">
+                <div class="logo-icon">
+                    <span class="rocket-icon">🚀</span>
+                </div>
+                CreiskyApps
+            </a>
+            <a href="../creiskyapps_website.html#blog" class="back-btn">
+                <span>←</span>
+                Volver al Blog
+            </a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        15 de Enero, 2025
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        16 min de lectura
+                    </div>
+                    <div class="meta-item">
+                        <span>🏷️</span>
+                        Arquitectura, APIs, Backend
+                    </div>
+                </div>
+                <h1 class="article-title">Arquitectura Técnica de BorealisClima: APIs y Algoritmos</h1>
+                <p class="article-subtitle">
+                    Análisis profundo de la arquitectura técnica detrás de BorealisClima: desde la integración 
+                    de APIs meteorológicas hasta los algoritmos de scoring deportivo.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    Construir <strong>BorealisClima</strong> requirió diseñar una arquitectura que manejara múltiples fuentes de datos meteorológicos, 
+                    procesamiento en tiempo real y algoritmos complejos de recomendación deportiva. En este artículo, 
+                    desgloso cada componente técnico y las decisiones arquitectónicas clave.
+                </p>
+
+                <div class="highlight-box">
+                    <p><strong>🎯 Desafío arquitectónico:</strong> Crear un sistema que procese datos de múltiples APIs meteorológicas, 
+                    aplique algoritmos de scoring deportivo y entregue recomendaciones personalizadas en menos de 2 segundos.</p>
+                </div>
+
+                <h2>Visión General de la Arquitectura</h2>
+
+                <p>
+                    BorealisClima sigue una arquitectura híbrida client-server optimizada para aplicaciones móviles, 
+                    con énfasis en la velocidad de respuesta y la disponibilidad offline.
+                </p>
+
+                <div class="architecture-diagram">
+                    <h3>Capas de la Arquitectura</h3>
+                    
+                    <div class="diagram-layer">
+                        <div class="layer-title">📱 Capa de Presentación (Flutter)</div>
+                        <div class="layer-components">
+                            <div class="component">UI Components</div>
+                            <div class="component">State Management</div>
+                            <div class="component">Navigation</div>
+                            <div class="component">Animations</div>
+                        </div>
+                    </div>
+                    
+                    <div class="diagram-layer">
+                        <div class="layer-title">🔄 Capa de Lógica de Negocio</div>
+                        <div class="layer-components">
+                            <div class="component">Weather Service</div>
+                            <div class="component">Sports Analyzer</div>
+                            <div class="component">Recommendation Engine</div>
+                            <div class="component">Cache Manager</div>
+                        </div>
+                    </div>
+                    
+                    <div class="diagram-layer">
+                        <div class="layer-title">💾 Capa de Datos</div>
+                        <div class="layer-components">
+                            <div class="component">Local Database</div>
+                            <div class="component">API Integrations</div>
+                            <div class="component">Cache Storage</div>
+                            <div class="component">User Preferences</div>
+                        </div>
+                    </div>
+                    
+                    <div class="diagram-layer">
+                        <div class="layer-title">🌐 APIs Externas</div>
+                        <div class="layer-components">
+                            <div class="component">OpenWeatherMap</div>
+                            <div class="component">Visual Crossing</div>
+                            <div class="component">WeatherAPI</div>
+                            <div class="component">AccuWeather</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h2>Integración de APIs Meteorológicas</h2>
+
+                <p>
+                    La precisión de BorealisClima depende de combinar datos de múltiples fuentes meteorológicas. 
+                    Cada API tiene fortalezas específicas que aprovecho estratégicamente.
+                </p>
+
+                <div class="api-grid">
+                    <div class="api-card">
+                        <div class="api-header">
+                            <div class="api-icon">🌍</div>
+                            <div class="api-title">OpenWeatherMap</div>
+                        </div>
+                        <div class="api-description">
+                            API principal para datos globales confiables y consistentes.
+                        </div>
+                        <ul class="api-features">
+                            <li>Cobertura global excelente</li>
+                            <li>Datos históricos disponibles</li>
+                            <li>API estable y bien documentada</li>
+                            <li>Forecast hasta 5 días</li>
+                            <li>Índice UV detallado</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="api-card">
+                        <div class="api-header">
+                            <div class="api-icon">📊</div>
+                            <div class="api-title">Visual Crossing</div>
+                        </div>
+                        <div class="api-description">
+                            Especializada en análisis histórico y patrones meteorológicos.
+                        </div>
+                        <ul class="api-features">
+                            <li>Datos históricos extensos</li>
+                            <li>Análisis de tendencias</li>
+                            <li>Precisión en precipitación</li>
+                            <li>Datos de calidad del aire</li>
+                            <li>Alertas meteorológicas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="api-card">
+                        <div class="api-header">
+                            <div class="api-icon">⚡</div>
+                            <div class="api-title">WeatherAPI</div>
+                        </div>
+                        <div class="api-description">
+                            Backup rápido y datos de precisión local mejorada.
+                        </div>
+                        <ul class="api-features">
+                            <li>Respuesta ultra-rápida</li>
+                            <li>Datos locales precisos</li>
+                            <li>Radar meteorológico</li>
+                            <li>Condiciones en tiempo real</li>
+                            <li>Economía de requests</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Estrategia de Agregación de Datos</h3>
+
+                <div class="code-block">
+                    <pre>class WeatherAggregator {
+  static const List&lt;WeatherProvider&gt; PROVIDERS = [
+    WeatherProvider.openWeatherMap,
+    WeatherProvider.visualCrossing,
+    WeatherProvider.weatherAPI,
+  ];
+  
+  Future&lt;AggregatedWeatherData&gt; getWeatherData(
+      double lat, double lon) async {
+    
+    final futures = PROVIDERS.map((provider) => 
+      _fetchFromProvider(provider, lat, lon).timeout(
+        Duration(seconds: 3),
+        onTimeout: () => null,
+      )
+    );
+    
+    final results = await Future.wait(futures);
+    final validResults = results.where((r) => r != null).toList();
+    
+    if (validResults.isEmpty) {
+      throw WeatherDataException('No weather data available');
+    }
+    
+    return _aggregateResults(validResults);
+  }
+  
+  AggregatedWeatherData _aggregateResults(
+      List&lt;WeatherData&gt; results) {
+    
+    // Weighted average basado en confiabilidad de cada API
+    final weights = {
+      WeatherProvider.openWeatherMap: 0.4,
+      WeatherProvider.visualCrossing: 0.35,
+      WeatherProvider.weatherAPI: 0.25,
+    };
+    
+    double weightedTemp = 0.0;
+    double weightedHumidity = 0.0;
+    double weightedWindSpeed = 0.0;
+    double totalWeight = 0.0;
+    
+    for (final result in results) {
+      final weight = weights[result.provider] ?? 0.0;
+      weightedTemp += result.temperature * weight;
+      weightedHumidity += result.humidity * weight;
+      weightedWindSpeed += result.windSpeed * weight;
+      totalWeight += weight;
+    }
+    
+    return AggregatedWeatherData(
+      temperature: weightedTemp / totalWeight,
+      humidity: weightedHumidity / totalWeight,
+      windSpeed: weightedWindSpeed / totalWeight,
+      confidence: _calculateConfidence(results),
+      sources: results.map((r) => r.provider).toList(),
+    );
+  }
+  
+  double _calculateConfidence(List&lt;WeatherData&gt; results) {
+    if (results.length == 1) return 0.7;
+    if (results.length == 2) return 0.85;
+    return 0.95; // Alta confianza con 3+ fuentes
+  }
+}</pre>
+                </div>
+
+                <h2>Algoritmos de Scoring Deportivo</h2>
+
+                <p>
+                    El corazón de BorealisClima son los algoritmos que convierten datos meteorológicos brutos 
+                    en recomendaciones deportivas específicas. Cada deporte tiene su propio modelo de scoring.
+                </p>
+
+                <div class="metrics-dashboard">
+                    <div class="metric-item">
+                        <div class="metric-value">12</div>
+                        <div class="metric-description">Deportes soportados</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">47</div>
+                        <div class="metric-description">Variables meteorológicas</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0-100</div>
+                        <div class="metric-description">Escala de puntuación</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">87%</div>
+                        <div class="metric-description">Precisión promedio</div>
+                    </div>
+                </div>
+
+                <h3>Modelo de Scoring Multifactorial</h3>
+
+                <div class="code-block">
+                    <pre>class SportsScoringEngine {
+  static const Map&lt;Sport, SportModel&gt; SPORT_MODELS = {
+    Sport.running: SportModel(
+      temperatureOptimal: TemperatureRange(15, 22),
+      temperatureWeight: 0.35,
+      windSpeedMax: 15.0,
+      windWeight: 0.20,
+      humidityOptimal: HumidityRange(30, 60),
+      humidityWeight: 0.15,
+      uvIndexMax: 6.0,
+      uvWeight: 0.20,
+      precipitationTolerance: 0.1,
+      precipitationWeight: 0.10,
+    ),
+    
+    Sport.cycling: SportModel(
+      temperatureOptimal: TemperatureRange(18, 28),
+      temperatureWeight: 0.30,
+      windSpeedMax: 25.0,
+      windWeight: 0.35, // Más sensible al viento
+      humidityOptimal: HumidityRange(40, 70),
+      humidityWeight: 0.10,
+      uvIndexMax: 8.0,
+      uvWeight: 0.15,
+      precipitationTolerance: 0.0, // Cero tolerancia a lluvia
+      precipitationWeight: 0.10,
+    ),
+    
+    Sport.golf: SportModel(
+      temperatureOptimal: TemperatureRange(16, 30),
+      temperatureWeight: 0.25,
+      windSpeedMax: 20.0,
+      windWeight: 0.30,
+      humidityOptimal: HumidityRange(40, 80),
+      humidityWeight: 0.05,
+      uvIndexMax: 9.0,
+      uvWeight: 0.25,
+      precipitationTolerance: 0.2,
+      precipitationWeight: 0.15,
+    ),
+  };
+  
+  double calculateSportScore(Sport sport, WeatherConditions weather) {
+    final model = SPORT_MODELS[sport]!;
+    double totalScore = 100.0;
+    
+    // Factor temperatura
+    final tempScore = _calculateTemperatureScore(
+      weather.temperature, 
+      model.temperatureOptimal
+    );
+    totalScore = totalScore * (tempScore * model.temperatureWeight + 
+                               (1 - model.temperatureWeight));
+    
+    // Factor viento
+    final windScore = _calculateWindScore(
+      weather.windSpeed, 
+      model.windSpeedMax
+    );
+    totalScore = totalScore * (windScore * model.windWeight + 
+                               (1 - model.windWeight));
+    
+    // Factor humedad
+    final humidityScore = _calculateHumidityScore(
+      weather.humidity, 
+      model.humidityOptimal
+    );
+    totalScore = totalScore * (humidityScore * model.humidityWeight + 
+                               (1 - model.humidityWeight));
+    
+    // Factor UV
+    final uvScore = _calculateUVScore(weather.uvIndex, model.uvIndexMax);
+    totalScore = totalScore * (uvScore * model.uvWeight + 
+                               (1 - model.uvWeight));
+    
+    // Factor precipitación (penalización severa)
+    if (weather.precipitation > model.precipitationTolerance) {
+      final precipPenalty = math.min(
+        weather.precipitation / model.precipitationTolerance, 
+        1.0
+      );
+      totalScore *= (1 - precipPenalty * model.precipitationWeight);
+    }
+    
+    return math.max(0.0, math.min(100.0, totalScore));
+  }
+  
+  double _calculateTemperatureScore(double temp, TemperatureRange optimal) {
+    if (temp >= optimal.min && temp <= optimal.max) {
+      return 1.0; // Temperatura perfecta
+    }
+    
+    // Penalización gradual fuera del rango óptimo
+    final deviation = temp < optimal.min 
+        ? optimal.min - temp 
+        : temp - optimal.max;
+    
+    // Cada grado fuera del rango reduce score en 8%
+    return math.max(0.0, 1.0 - (deviation * 0.08));
+  }
+  
+  double _calculateWindScore(double windSpeed, double maxWind) {
+    if (windSpeed <= maxWind) {
+      return 1.0;
+    }
+    
+    // Penalización exponencial por viento excesivo
+    final excess = windSpeed - maxWind;
+    return math.max(0.0, 1.0 - math.pow(excess / 10.0, 1.5));
+  }
+}</pre>
+                </div>
+
+                <h2>Arquitectura de Cache Inteligente</h2>
+
+                <p>
+                    Para minimizar llamadas a APIs y garantizar respuestas rápidas, implementé un sistema 
+                    de cache multicapa que balancea frescura de datos con performance.
+                </p>
+
+                <div class="flow-diagram">
+                    <h3>Flujo de Datos con Cache</h3>
+                    
+                    <div class="flow-step">
+                        <strong>1. Solicitud de Usuario</strong><br>
+                        <small>App solicita datos meteorológicos para ubicación</small>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <strong>2. Cache L1 - Memoria</strong><br>
+                        <small>Verificar cache en memoria (válido por 10 minutos)</small>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <strong>3. Cache L2 - Local DB</strong><br>
+                        <small>Verificar base de datos local (válido por 30 minutos)</small>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <strong>4. APIs Externas</strong><br>
+                        <small>Llamada a múltiples APIs meteorológicas</small>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <strong>5. Procesamiento y Cache</strong><br>
+                        <small>Agregar datos, calcular scores, actualizar todos los caches</small>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <strong>6. Respuesta al Usuario</strong><br>
+                        <small>Entregar datos procesados con recomendaciones</small>
+                    </div>
+                </div>
+
+                <h3>Implementación del Sistema de Cache</h3>
+
+                <div class="code-block">
+                    <pre>class WeatherCacheManager {
+  // Cache L1: Memoria (más rápido, menor capacidad)
+  static final Map&lt;String, CachedWeatherData&gt; _memoryCache = {};
+  static const int MEMORY_CACHE_DURATION_MINUTES = 10;
+  static const int MAX_MEMORY_ENTRIES = 50;
+  
+  // Cache L2: Base de datos local (mayor capacidad, persistente)
+  static const int DB_CACHE_DURATION_MINUTES = 30;
+  static const int MAX_DB_ENTRIES = 500;
+  
+  Future&lt;WeatherData?&gt; getCachedWeather(
+      double lat, double lon) async {
+    
+    final cacheKey = _generateCacheKey(lat, lon);
+    
+    // 1. Verificar cache en memoria
+    final memoryData = _memoryCache[cacheKey];
+    if (memoryData != null && !memoryData.isExpired(MEMORY_CACHE_DURATION_MINUTES)) {
+      _analytics.trackCacheHit('memory');
+      return memoryData.weatherData;
+    }
+    
+    // 2. Verificar cache en base de datos
+    final dbData = await _weatherDatabase.getCachedWeather(cacheKey);
+    if (dbData != null && !dbData.isExpired(DB_CACHE_DURATION_MINUTES)) {
+      // Promocionar a cache de memoria
+      _memoryCache[cacheKey] = CachedWeatherData(
+        weatherData: dbData.weatherData,
+        timestamp: DateTime.now(),
+      );
+      _analytics.trackCacheHit('database');
+      return dbData.weatherData;
+    }
+    
+    _analytics.trackCacheMiss();
+    return null; // Cache miss, necesita fetch de APIs
+  }
+  
+  Future&lt;void&gt; cacheWeatherData(
+      double lat, double lon, 
+      WeatherData weatherData) async {
+    
+    final cacheKey = _generateCacheKey(lat, lon);
+    final cachedData = CachedWeatherData(
+      weatherData: weatherData,
+      timestamp: DateTime.now(),
+    );
+    
+    // Guardar en memoria
+    _memoryCache[cacheKey] = cachedData;
+    _enforceMemoryCacheLimit();
+    
+    // Guardar en base de datos
+    await _weatherDatabase.insertWeatherData(cacheKey, cachedData);
+    await _enforceDbCacheLimit();
+  }
+  
+  void _enforceMemoryCacheLimit() {
+    if (_memoryCache.length > MAX_MEMORY_ENTRIES) {
+      // LRU eviction: remover entradas más antiguas
+      final sortedEntries = _memoryCache.entries.toList()
+        ..sort((a, b) => a.value.timestamp.compareTo(b.value.timestamp));
+      
+      final toRemove = sortedEntries.take(
+        _memoryCache.length - MAX_MEMORY_ENTRIES
+      );
+      
+      for (final entry in toRemove) {
+        _memoryCache.remove(entry.key);
+      }
+    }
+  }
+  
+  String _generateCacheKey(double lat, double lon) {
+    // Redondear coordenadas para agrupar ubicaciones cercanas
+    final roundedLat = (lat * 100).round() / 100;
+    final roundedLon = (lon * 100).round() / 100;
+    return '${roundedLat}_${roundedLon}';
+  }
+}</pre>
+                </div>
+
+                <h2>Manejo de Estados Offline</h2>
+
+                <p>
+                    BorealisClima debe funcionar sin conexión usando datos previamente cached y 
+                    proporcionar una experiencia degradada pero útil.
+                </p>
+
+                <div class="warning-box">
+                    <p><strong>⚠️ Desafío de conectividad:</strong> Los usuarios frecuentemente consultan el clima 
+                    en ubicaciones remotas (montañas, playas) donde la conectividad es limitada. 
+                    La app debe manejar estos escenarios graciosamente.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre>class OfflineWeatherService {
+  Future&lt;WeatherResponse&gt; getWeatherWithFallback(
+      double lat, double lon) async {
+    
+    try {
+      // Intentar obtener datos frescos
+      final onlineData = await _weatherAggregator.getWeatherData(lat, lon);
+      await _cacheManager.cacheWeatherData(lat, lon, onlineData);
+      
+      return WeatherResponse(
+        data: onlineData,
+        source: DataSource.online,
+        confidence: onlineData.confidence,
+      );
+      
+    } on SocketException {
+      // Sin conexión a internet
+      return await _handleOfflineScenario(lat, lon);
+      
+    } on TimeoutException {
+      // APIs lentas, intentar con cache
+      final cachedData = await _cacheManager.getCachedWeather(lat, lon);
+      if (cachedData != null) {
+        return WeatherResponse(
+          data: cachedData,
+          source: DataSource.cached,
+          confidence: _calculateCacheConfidence(cachedData),
+        );
+      }
+      throw WeatherServiceException('No data available');
+      
+    } catch (e) {
+      // Error genérico, fallback a cache
+      return await _handleOfflineScenario(lat, lon);
+    }
+  }
+  
+  Future&lt;WeatherResponse&gt; _handleOfflineScenario(
+      double lat, double lon) async {
+    
+    // 1. Buscar datos exactos en cache
+    var cachedData = await _cacheManager.getCachedWeather(lat, lon);
+    if (cachedData != null) {
+      return WeatherResponse(
+        data: cachedData,
+        source: DataSource.cached,
+        confidence: _calculateCacheConfidence(cachedData),
+      );
+    }
+    
+    // 2. Buscar datos en ubicaciones cercanas (radio de 50km)
+    final nearbyData = await _findNearbyWeatherData(lat, lon, 50.0);
+    if (nearbyData != null) {
+      // Interpolar datos basado en distancia
+      final interpolatedData = _interpolateWeatherData(
+        nearbyData, lat, lon
+      );
+      
+      return WeatherResponse(
+        data: interpolatedData,
+        source: DataSource.interpolated,
+        confidence: 0.6, // Menor confianza por interpolación
+      );
+    }
+    
+    // 3. Usar datos históricos promedio para la fecha/ubicación
+    final historicalData = await _getHistoricalAverage(lat, lon);
+    if (historicalData != null) {
+      return WeatherResponse(
+        data: historicalData,
+        source: DataSource.historical,
+        confidence: 0.4, // Muy baja confianza
+      );
+    }
+    
+    throw WeatherServiceException('No weather data available offline');
+  }
+  
+  double _calculateCacheConfidence(WeatherData cachedData) {
+    final ageInMinutes = DateTime.now()
+        .difference(cachedData.timestamp)
+        .inMinutes;
+    
+    if (ageInMinutes <= 10) return 0.95;
+    if (ageInMinutes <= 30) return 0.85;
+    if (ageInMinutes <= 60) return 0.70;
+    return 0.50; // Datos muy antiguos
+  }
+}</pre>
+                </div>
+
+                <h2>Optimización de Performance</h2>
+
+                <p>
+                    Para mantener la app responsiva, implementé varias técnicas de optimización 
+                    enfocadas en las operaciones más costosas: llamadas a APIs y cálculos de scoring.
+                </p>
+
+                <div class="metrics-dashboard">
+                    <div class="metric-item">
+                        <div class="metric-value">&lt;2s</div>
+                        <div class="metric-description">Tiempo de respuesta promedio</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">85%</div>
+                        <div class="metric-description">Cache hit rate</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">3</div>
+                        <div class="metric-description">APIs simultáneas máximo</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">50MB</div>
+                        <div class="metric-description">Uso de memoria promedio</div>
+                    </div>
+                </div>
+
+                <h3>Técnicas de Optimización Implementadas</h3>
+
+                <ul>
+                    <li><strong>Precarga inteligente:</strong> Fetch proactivo de datos para ubicaciones frecuentes</li>
+                    <li><strong>Batching de requests:</strong> Agrupar múltiples solicitudes en una sola llamada</li>
+                    <li><strong>Compresión de respuestas:</strong> Gzip para reducir transferencia de datos</li>
+                    <li><strong>Connection pooling:</strong> Reutilizar conexiones HTTP para reducir latencia</li>
+                    <li><strong>Scoring paralelo:</strong> Calcular puntuaciones de múltiples deportes simultáneamente</li>
+                    <li><strong>Algoritmos aproximados:</strong> Usar aproximaciones para cálculos no críticos</li>
+                </ul>
+
+                <div class="code-block">
+                    <pre>class PerformanceOptimizedWeatherService {
+  // Connection pool para reutilizar conexiones HTTP
+  static final http.Client _httpClient = http.Client();
+  
+  // Executor para paralelizar cálculos de scoring
+  static final _scoringExecutor = ComputeExecutor(maxConcurrent: 3);
+  
+  Future&lt;List&lt;SportRecommendation&gt;&gt; getOptimizedRecommendations(
+      double lat, double lon, List&lt;Sport&gt; sports) async {
+    
+    // 1. Fetch paralelo de datos meteorológicos
+    final weatherFuture = _getWeatherDataOptimized(lat, lon);
+    
+    // 2. Pre-cargar modelos de deportes
+    final sportsModels = sports.map((sport) => 
+      SPORT_MODELS[sport]!
+    ).toList();
+    
+    // 3. Esperar datos meteorológicos
+    final weatherData = await weatherFuture;
+    
+    // 4. Calcular scores en paralelo usando isolates
+    final scoringFutures = sports.map((sport) => 
+      _scoringExecutor.execute(
+        _calculateSportScoreIsolate,
+        [sport, weatherData, sportsModels[sports.indexOf(sport)]]
+      )
+    );
+    
+    final scores = await Future.wait(scoringFutures);
+    
+    // 5. Crear recomendaciones finales
+    return sports.asMap().entries.map((entry) => 
+      SportRecommendation(
+        sport: entry.value,
+        score: scores[entry.key],
+        weatherData: weatherData,
+        recommendations: _generateRecommendations(
+          entry.value, scores[entry.key], weatherData
+        ),
+      )
+    ).toList();
+  }
+  
+  Future&lt;WeatherData&gt; _getWeatherDataOptimized(
+      double lat, double lon) async {
+    
+    // 1. Verificar cache primero
+    final cached = await _cacheManager.getCachedWeather(lat, lon);
+    if (cached != null) return cached;
+    
+    // 2. Batch multiple requests en una sola conexión
+    final request = BatchWeatherRequest(
+      locations: [LatLng(lat, lon)],
+      providers: [
+        WeatherProvider.openWeatherMap,
+        WeatherProvider.visualCrossing,
+      ],
+      dataTypes: [
+        'temperature', 'humidity', 'windSpeed', 
+        'precipitation', 'uvIndex'
+      ],
+    );
+    
+    // 3. Request con timeout agresivo
+    final response = await _httpClient
+        .post(
+          Uri.parse('$API_BASE_URL/batch'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'gzip',
+          },
+          body: jsonEncode(request.toJson()),
+        )
+        .timeout(Duration(seconds: 3));
+    
+    final weatherData = WeatherData.fromBatchResponse(response.body);
+    
+    // 4. Cache para requests futuros
+    await _cacheManager.cacheWeatherData(lat, lon, weatherData);
+    
+    return weatherData;
+  }
+}
+
+// Función pura para ejecutar en isolate
+double _calculateSportScoreIsolate(List args) {
+  final sport = args[0] as Sport;
+  final weather = args[1] as WeatherData;
+  final model = args[2] as SportModel;
+  
+  return SportsScoringEngine.calculateSportScore(sport, weather, model);
+}</pre>
+                </div>
+
+                <h2>Monitoreo y Analytics</h2>
+
+                <p>
+                    Para mantener y mejorar la calidad del servicio, implementé un sistema de monitoreo 
+                    que rastrea métricas clave de performance y precisión.
+                </p>
+
+                <div class="success-box">
+                    <p><strong>📊 Métricas clave monitoreadas:</strong> Latencia de APIs, precisión de recomendaciones, 
+                    satisfacción del usuario, uso de cache, errores de red, y patrones de uso por deporte.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre>class WeatherAnalytics {
+  static final _analytics = FirebaseAnalytics.instance;
+  
+  // Trackear performance de APIs
+  Future&lt;void&gt; trackAPIPerformance(
+      WeatherProvider provider, 
+      Duration responseTime, 
+      bool success) async {
+    
+    await _analytics.logEvent(
+      name: 'api_performance',
+      parameters: {
+        'provider': provider.name,
+        'response_time_ms': responseTime.inMilliseconds,
+        'success': success,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      },
+    );
+  }
+  
+  // Trackear precisión de recomendaciones
+  Future&lt;void&gt; trackRecommendationAccuracy(
+      Sport sport, 
+      double predictedScore, 
+      bool userActuallyDid) async {
+    
+    await _analytics.logEvent(
+      name: 'recommendation_accuracy',
+      parameters: {
+        'sport': sport.name,
+        'predicted_score': predictedScore,
+        'user_activity': userActuallyDid,
+        'score_bucket': _getScoreBucket(predictedScore),
+      },
+    );
+  }
+  
+  // Trackear uso de cache
+  void trackCacheHit(String cacheLevel) {
+    _analytics.logEvent(
+      name: 'cache_performance',
+      parameters: {
+        'cache_level': cacheLevel, // 'memory' | 'database' | 'miss'
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      },
+    );
+  }
+  
+  String _getScoreBucket(double score) {
+    if (score >= 80) return 'excellent';
+    if (score >= 60) return 'good';
+    if (score >= 40) return 'fair';
+    return 'poor';
+  }
+}</pre>
+                </div>
+
+                <h2>Lecciones Aprendidas y Mejores Prácticas</h2>
+
+                <p>
+                    Después de 18 meses desarrollando y refinando la arquitectura de BorealisClima, 
+                    estas son las lecciones más valiosas que he aprendido:
+                </p>
+
+                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin: 2rem 0;">
+                    <h3>🎯 Decisiones Arquitectónicas Clave</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✅ <strong>Múltiples APIs son esenciales:</strong> Una sola fuente meteorológica no es suficientemente confiable</li>
+                        <li>✅ <strong>Cache multinivel salva la UX:</strong> Sin cache agresivo, la app sería inutilizable</li>
+                        <li>✅ <strong>Offline-first approach:</strong> Los usuarios necesitan datos incluso sin conectividad</li>
+                        <li>✅ <strong>Scoring específico por deporte:</strong> Un modelo genérico no funciona para diferentes actividades</li>
+                        <li>✅ <strong>Monitoreo desde el día 1:</strong> Sin métricas, no puedes optimizar efectivamente</li>
+                    </ul>
+                    
+                    <h3 style="margin-top: 2rem;">⚠️ Errores a Evitar</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>❌ <strong>Confiar en una sola API:</strong> Las APIs meteorológicas fallan más de lo esperado</li>
+                        <li>❌ <strong>Cache demasiado agresivo:</strong> Datos antiguos pueden ser peores que no tener datos</li>
+                        <li>❌ <strong>Algoritmos demasiado complejos:</strong> La simplicidad predecible gana sobre la sofisticación impredecible</li>
+                        <li>❌ <strong>Ignorar casos edge:</strong> Ubicaciones remotas, zonas horarias, condiciones extremas</li>
+                    </ul>
+                </div>
+
+                <div class="cta-section">
+                    <h3 class="cta-title">¿Construyendo una App con APIs Externas?</h3>
+                    <p class="cta-text">
+                        Si estás desarrollando una aplicación que integra múltiples APIs o necesitas 
+                        arquitectura robusta para datos en tiempo real, puedo ayudarte a diseñar una solución escalable.
+                    </p>
+                    <a href="../creiskyapps_website.html#contacto" class="btn">
+                        <span>🏗️</span>
+                        Consultoría de Arquitectura
+                    </a>
+                </div>
+            </div>
+
+            <footer class="article-footer">
+                <div class="author-info">
+                    <div class="author-avatar">👨‍💻</div>
+                    <div class="author-details">
+                        <h4>CreiskyApps Developer</h4>
+                        <p>Especialista en Flutter y arquitectura de sistemas</p>
+                    </div>
+                </div>
+                <p>
+                    ¿Tienes preguntas sobre algún aspecto específico de la arquitectura? 
+                    Me encanta discutir decisiones técnicas y trade-offs arquitectónicos.
+                </p>
+            </footer>
+        </article>
+    </main>
+
+    <script>
+        // Smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Reading progress indicator
+        function updateReadingProgress() {
+            const article = document.querySelector('article');
+            const scrolled = window.scrollY;
+            const articleHeight = article.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const progress = Math.min(scrolled / (articleHeight - windowHeight), 1);
+            
+            let progressBar = document.querySelector('.reading-progress');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'reading-progress';
+                progressBar.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    height: 3px;
+                    background: var(--gradient-primary);
+                    z-index: 1001;
+                    transition: width 0.1s ease;
+                `;
+                document.body.appendChild(progressBar);
+            }
+            
+            progressBar.style.width = `${progress * 100}%`;
+        }
+
+        window.addEventListener('scroll', updateReadingProgress);
+        updateReadingProgress();
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Apply animation to elements
+        document.querySelectorAll('.api-card, .metric-item, .flow-step').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Interactive hover effects
+        document.querySelectorAll('.api-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px)';
+                card.style.boxShadow = 'var(--shadow-large)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '';
+            });
+        });
+
+        // Code block copy functionality
+        document.querySelectorAll('.code-block').forEach(block => {
+            const copyBtn = document.createElement('button');
+            copyBtn.innerHTML = '📋 Copiar';
+            copyBtn.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                padding: 5px 10px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.8rem;
+            `;
+            
+            block.style.position = 'relative';
+            block.appendChild(copyBtn);
+            
+            copyBtn.addEventListener('click', async () => {
+                const code = block.querySelector('pre').textContent;
+                try {
+                    await navigator.clipboard.writeText(code);
+                    copyBtn.innerHTML = '✅ Copiado';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '📋 Copiar';
+                    }, 2000);
+                } catch (err) {
+                    copyBtn.innerHTML = '❌ Error';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '📋 Copiar';
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

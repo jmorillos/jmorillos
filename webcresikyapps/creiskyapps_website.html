@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreiskyApps - Apps Intuitivas que Mejoran tu Vida</title>
+    <meta name="description" content="Desarrollador especializado en aplicaciones móviles con Flutter. Desde apps de salud hasta pronósticos del tiempo con recomendaciones deportivas.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://creiskyapps.vercel.app/">
+    <meta property="og:title" content="CreiskyApps - Apps Intuitivas que Mejoran tu Vida">
+    <meta property="og:description" content="Desarrollador especializado en aplicaciones móviles con Flutter. Desde apps de salud hasta pronósticos del tiempo con recomendaciones deportivas.">
+    <meta property="og:image" content="https://creiskyapps.vercel.app/og-image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://creiskyapps.vercel.app/">
+    <meta property="twitter:title" content="CreiskyApps - Apps Intuitivas que Mejoran tu Vida">
+    <meta property="twitter:description" content="Desarrollador especializado en aplicaciones móviles con Flutter. Desde apps de salud hasta pronósticos del tiempo con recomendaciones deportivas.">
+    <meta property="twitter:image" content="https://creiskyapps.vercel.app/og-image.png">
+    
+    <meta name="keywords" content="Flutter, desarrollo móvil, apps salud, apps clima, PillSync, BorealisClima, desarrollador móvil, Dart, Firebase">
+    <meta name="author" content="CreiskyApps">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "CreiskyApps",
+        "jobTitle": "Mobile App Developer",
+        "description": "Desarrollador especializado en aplicaciones móviles con Flutter",
+        "url": "https://creiskyapps.vercel.app",
+        "sameAs": [
+            "https://github.com/creiskyapps",
+            "https://linkedin.com/in/creiskyapps"
+        ],
+        "knowsAbout": ["Flutter", "Dart", "Mobile Development", "Firebase", "UI/UX Design"]
+    }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099cc;
+            --secondary: #ff6b35;
+            --accent: #a855f7;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-light: #94a3b8;
+            --surface: #ffffff;
+            --surface-glass: rgba(255, 255, 255, 0.85);
+            --surface-dark: #020817;
+            --surface-card: rgba(255, 255, 255, 0.95);
+            --border: rgba(148, 163, 184, 0.2);
+            --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #a855f7 50%, #ff6b35 100%);
+            --gradient-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+            --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.08);
+            --shadow-float: 0 32px 64px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: radial-gradient(ellipse at top, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom left, rgba(255, 107, 53, 0.05) 0%, transparent 50%),
+                        #fafbfc;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            box-shadow: var(--shadow-glass);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 1.25rem;
+            transition: transform 0.2s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-mark::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: white;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            transform: translate(-50%, -60%);
+        }
+
+        .logo-mark::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            width: 16px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content {
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface-glass);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-badge .badge-icon {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 24px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface-glass);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+        }
+
+        /* Hero Visual */
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .phone-showcase {
+            position: relative;
+            width: 280px;
+            height: 560px;
+        }
+
+        .phone-showcase.secondary {
+            width: 260px;
+            height: 520px;
+            transform: scale(0.9) translateX(-20px);
+            z-index: 0;
+        }
+
+        .phone-device {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 40px;
+            padding: 8px;
+            box-shadow: var(--shadow-float);
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #1a237e;
+            border-radius: 32px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%232196f3;stop-opacity:1" /><stop offset="100%" style="stop-color:%231a237e;stop-opacity:1" /></linearGradient></defs><rect width="300" height="600" fill="url(%23bg)"/><rect x="0" y="0" width="300" height="60" fill="%232196f3"/><text x="20" y="25" fill="white" font-family="Arial" font-size="12">4:06</text><text x="260" y="25" fill="white" font-family="Arial" font-size="12">📶📡🔋</text><text x="20" y="45" fill="white" font-family="Arial" font-size="10">Buenas tardes</text><text x="20" y="70" fill="white" font-family="Arial" font-size="18" font-weight="bold">Maria Murillo</text><rect x="20" y="90" width="260" height="80" rx="12" fill="rgba(0,0,0,0.3)"/><text x="30" y="110" fill="white" font-family="Arial" font-size="12">📅 Resumen del día</text><text x="30" y="125" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="10">28/9/2025</text><rect x="40" y="135" width="50" height="25" rx="8" fill="rgba(33,150,243,0.3)"/><text x="50" y="148" fill="white" font-family="Arial" font-size="10">10</text><text x="45" y="158" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Programados</text><rect x="110" y="135" width="50" height="25" rx="8" fill="rgba(76,175,80,0.3)"/><text x="125" y="148" fill="white" font-family="Arial" font-size="10">8</text><text x="120" y="158" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Tomados</text><rect x="180" y="135" width="50" height="25" rx="8" fill="rgba(255,152,0,0.3)"/><text x="195" y="148" fill="white" font-family="Arial" font-size="10">2</text><text x="185" y="158" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Pendientes</text><text x="20" y="200" fill="white" font-family="Arial" font-size="14" font-weight="bold">Medicamentos de hoy</text><rect x="20" y="220" width="260" height="100" rx="12" fill="rgba(0,0,0,0.2)"/><text x="30" y="240" fill="white" font-family="Arial" font-size="12">Aspirina ❤️ 🟢</text><text x="30" y="255" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="10">🔵 150 💊 cápsulas</text><rect x="30" y="265" width="100" height="4" rx="2" fill="rgba(76,175,80,0.5)"/><rect x="30" y="265" width="75" height="4" rx="2" fill="%234caf50"/><text x="30" y="280" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">18 / 20 cápsulas</text><rect x="30" y="290" width="30" height="20" rx="10" fill="%234caf50"/><text x="35" y="302" fill="white" font-family="Arial" font-size="8">12:54</text><rect x="70" y="290" width="30" height="20" rx="10" fill="%234caf50"/><text x="75" y="302" fill="white" font-family="Arial" font-size="8">13:02</text><rect x="110" y="290" width="30" height="20" rx="10" fill="%234caf50"/><text x="115" y="302" fill="white" font-family="Arial" font-size="8">13:07</text><rect x="150" y="290" width="30" height="20" rx="10" fill="%23ff9800"/><text x="155" y="302" fill="white" font-family="Arial" font-size="8">13:29</text><rect x="20" y="340" width="260" height="100" rx="12" fill="rgba(0,0,0,0.2)"/><text x="30" y="360" fill="white" font-family="Arial" font-size="12">Tramadol ❤️ 🟢</text><text x="30" y="375" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="10">🔵 50 mg 💊 cápsulas</text><rect x="30" y="385" width="100" height="4" rx="2" fill="rgba(76,175,80,0.5)"/><rect x="30" y="385" width="80" height="4" rx="2" fill="%234caf50"/><text x="30" y="400" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">48 / 60 cápsulas</text><rect x="30" y="410" width="30" height="20" rx="10" fill="%234caf50"/><text x="35" y="422" fill="white" font-family="Arial" font-size="8">08:00</text><rect x="70" y="410" width="30" height="20" rx="10" fill="%234caf50"/><text x="75" y="422" fill="white" font-family="Arial" font-size="8">12:00</text><rect x="110" y="410" width="30" height="20" rx="10" fill="%232196f3"/><text x="115" y="422" fill="white" font-family="Arial" font-size="8">22:00</text><rect x="0" y="560" width="300" height="40" fill="rgba(0,0,0,0.8)"/><text x="30" y="578" fill="white" font-family="Arial" font-size="10">🏠</text><text x="25" y="590" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Inicio</text><text x="90" y="578" fill="white" font-family="Arial" font-size="10">💊</text><text x="80" y="590" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Medicamentos</text><text x="170" y="578" fill="white" font-family="Arial" font-size="10">📅</text><text x="165" y="590" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Calendario</text><text x="240" y="578" fill="white" font-family="Arial" font-size="10">⚙️</text><text x="225" y="590" fill="rgba(255,255,255,0.7)" font-family="Arial" font-size="8">Configuración</text><circle cx="270" cy="480" r="20" fill="%232196f3"/><text x="265" y="485" fill="white" font-family="Arial" font-size="16">+</text></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .phone-screen.borealis {
+            background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600"><defs><linearGradient id="bgWeather" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%23263238;stop-opacity:1" /><stop offset="100%" style="stop-color:%23424242;stop-opacity:1" /></linearGradient></defs><rect width="300" height="600" fill="url(%23bgWeather)"/><rect x="0" y="0" width="300" height="60" fill="%23263238"/><text x="20" y="25" fill="white" font-family="Arial" font-size="12">10:12</text><text x="260" y="25" fill="white" font-family="Arial" font-size="12">📶📡🔋</text><text x="120" y="40" fill="white" font-family="Arial" font-size="16" font-weight="bold">Running</text><rect x="20" y="70" width="260" height="120" rx="12" fill="rgba(0,0,0,0.4)"/><rect x="30" y="80" width="240" height="8" rx="4" fill="%234caf50"/><text x="140" y="110" fill="%234caf50" font-family="Arial" font-size="24" font-weight="bold">100%</text><text x="30" y="135" fill="%23ffc107" font-family="Arial" font-size="12">💡 Por qué es perfecto:</text><text x="30" y="150" fill="white" font-family="Arial" font-size="10">• Temperatura ideal (18°C)</text><text x="30" y="165" fill="white" font-family="Arial" font-size="10">• Viento suave (16.9 km/h)</text><text x="30" y="180" fill="white" font-family="Arial" font-size="10">• Sin precipitaciones (0%)</text><rect x="20" y="210" width="260" height="120" rx="12" fill="rgba(0,0,0,0.4)"/><text x="30" y="230" fill="white" font-family="Arial" font-size="12">⏰ MEJORES HORARIOS HOY</text><rect x="30" y="250" width="40" height="60" rx="8" fill="rgba(255,193,7,0.3)"/><text x="45" y="270" fill="white" font-family="Arial" font-size="10">08:00</text><text x="35" y="285" fill="%23ffc107" font-family="Arial" font-size="12">⭐</text><text x="40" y="305" fill="%234caf50" font-family="Arial" font-size="8">100%</text><rect x="80" y="250" width="40" height="60" rx="8" fill="rgba(255,193,7,0.3)"/><text x="95" y="270" fill="white" font-family="Arial" font-size="10">10:00</text><text x="85" y="285" fill="%23ffc107" font-family="Arial" font-size="12">⭐</text><text x="90" y="305" fill="%234caf50" font-family="Arial" font-size="8">100%</text><rect x="130" y="250" width="40" height="60" rx="8" fill="rgba(255,193,7,0.3)"/><text x="145" y="270" fill="white" font-family="Arial" font-size="10">12:00</text><text x="135" y="285" fill="%23ffc107" font-family="Arial" font-size="12">⭐</text><text x="140" y="305" fill="%234caf50" font-family="Arial" font-size="8">100%</text><rect x="180" y="250" width="40" height="60" rx="8" fill="rgba(255,193,7,0.3)"/><text x="195" y="270" fill="white" font-family="Arial" font-size="10">14:00</text><text x="185" y="285" fill="%23ffc107" font-family="Arial" font-size="12">⭐</text><text x="190" y="305" fill="%234caf50" font-family="Arial" font-size="8">100%</text><rect x="230" y="250" width="40" height="60" rx="8" fill="rgba(255,193,7,0.3)"/><text x="245" y="270" fill="white" font-family="Arial" font-size="10">16:00</text><text x="235" y="285" fill="%23ffc107" font-family="Arial" font-size="12">⭐</text><text x="240" y="305" fill="%234caf50" font-family="Arial" font-size="8">100%</text><rect x="20" y="350" width="260" height="140" rx="12" fill="rgba(0,0,0,0.4)"/><text x="30" y="370" fill="white" font-family="Arial" font-size="12">🏃 OTRAS OPCIONES</text><rect x="30" y="390" width="240" height="35" rx="8" fill="rgba(76,175,80,0.2)"/><text x="40" y="405" fill="white" font-family="Arial" font-size="10">👟 Trail Running</text><text x="210" y="405" fill="%234caf50" font-family="Arial" font-size="10">100% Match</text><rect x="30" y="435" width="240" height="35" rx="8" fill="rgba(76,175,80,0.2)"/><text x="40" y="450" fill="white" font-family="Arial" font-size="10">⛳ Golf</text><text x="210" y="450" fill="%234caf50" font-family="Arial" font-size="10">100% Match</text><rect x="30" y="480" width="240" height="35" rx="8" fill="rgba(76,175,80,0.2)"/><text x="40" y="495" fill="white" font-family="Arial" font-size="10">🐎 Equitación</text><text x="210" y="495" fill="%234caf50" font-family="Arial" font-size="10">100% Match</text><rect x="40" y="530" width="220" height="30" rx="15" fill="%236c5ce7"/><text x="135" y="548" fill="white" font-family="Arial" font-size="12">EMPEZAR Running 🚀</text><rect x="0" y="570" width="300" height="30" fill="rgba(0,0,0,0.8)"/><text x="30" y="588" fill="white" font-family="Arial" font-size="8">🏠 Inicio</text><text x="90" y="588" fill="white" font-family="Arial" font-size="8">🧭 Descubrir</text><text x="150" y="588" fill="white" font-family="Arial" font-size="8">📊 Métricas</text><text x="210" y="588" fill="white" font-family="Arial" font-size="8">🏃 Deportes</text><text x="260" y="588" fill="white" font-family="Arial" font-size="8">👤 Perfil</text></svg>');
+        }
+
+        /* Apps Section */
+        .apps-section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .apps-grid {
+            display: grid;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .app-card {
+            background: var(--surface-card);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+        }
+
+        .app-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-float);
+        }
+
+        .app-card-header {
+            padding: 3rem 3rem 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            transform: translate(50%, -50%);
+        }
+
+        .app-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .app-icon-large {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .app-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .app-category {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .app-description-card {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+        }
+
+        .app-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .app-card-content {
+            padding: 3rem;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .app-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .store-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: var(--text-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .store-link:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+
+        /* About Section */
+        .about-section {
+            padding: 120px 0;
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        .about-text p {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .tech-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.25rem;
+            border-radius: 30px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .tech-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+
+        .about-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .developer-card {
+            background: var(--surface-card);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+        }
+
+        .developer-avatar {
+            width: 120px;
+            height: 120px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .developer-avatar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: white;
+            clip-path: polygon(50% 15%, 0% 100%, 100% 100%);
+            transform: translate(-50%, -50%);
+        }
+
+        .developer-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .developer-title {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Blog Section */
+        .blog-section {
+            padding: 120px 0;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .blog-card {
+            background: var(--surface-card);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .blog-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .blog-image {
+            height: 200px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blog-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        .blog-content {
+            padding: 2rem;
+        }
+
+        .blog-date {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .blog-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .blog-excerpt {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .read-more {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: gap 0.2s ease;
+        }
+
+        .read-more:hover {
+            gap: 0.75rem;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 120px 0;
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+        }
+
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: start;
+        }
+
+        .contact-info h2 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        .contact-info p {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .contact-link:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+
+        .contact-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .contact-form {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--surface-dark);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+        }
+
+        .footer-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero-container,
+            .about-content,
+            .contact-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+                text-align: center;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .phone-showcase {
+                width: 250px;
+                height: 500px;
+            }
+
+            .apps-grid {
+                gap: 2rem;
+            }
+
+            .app-card-header,
+            .app-card-content {
+                padding: 2rem;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .nav-container,
+            .container {
+                padding: 0 1rem;
+            }
+
+            .hero {
+                padding: 100px 0 60px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-cta {
+                justify-content: center;
+            }
+
+            .phone-showcase {
+                width: 220px;
+                height: 440px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .about-text h2,
+            .contact-info h2 {
+                font-size: 2rem;
+            }
+
+            .app-card-header,
+            .app-card-content,
+            .contact-form {
+                padding: 1.5rem;
+            }
+
+            .tech-stack {
+                justify-content: center;
+            }
+        }
+
+        /* Loading animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .fade-in:nth-child(2) { animation-delay: 0.1s; }
+        .fade-in:nth-child(3) { animation-delay: 0.2s; }
+        .fade-in:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth transitions */
+        * {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav-container">
+            <a href="#inicio" class="logo">
+                <div class="logo-mark"></div>
+                CreiskyApps
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+                <li><a href="#apps" class="nav-link">Apps</a></li>
+                <li><a href="#sobre-mi" class="nav-link">Sobre Mí</a></li>
+                <li><a href="#blog" class="nav-link">Blog</a></li>
+                <li><a href="#contacto" class="nav-link">Contacto</a></li>
+            </ul>
+            <button class="mobile-menu-toggle" aria-label="Menú móvil">☰</button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge fade-in">
+                    <div class="badge-icon"></div>
+                    Desarrollador Flutter Especializado
+                </div>
+                <h1 class="fade-in">Apps Intuitivas que Mejoran tu Vida</h1>
+                <p class="hero-subtitle fade-in">
+                    Especializado en Flutter, creo aplicaciones que combinan inteligencia artificial, 
+                    diseño excepcional y funcionalidad práctica. Desde salud con PillSync hasta 
+                    pronósticos deportivos con BorealisClima.
+                </p>
+                <div class="hero-cta fade-in">
+                    <a href="#apps" class="btn btn-primary">
+                        Explorar Apps
+                        <span>→</span>
+                    </a>
+                    <a href="#sobre-mi" class="btn btn-secondary">
+                        Conocer Más
+                    </a>
+                </div>
+            </div>
+            <div class="hero-visual fade-in">
+                <div class="phone-showcase">
+                    <div class="phone-device">
+                        <div class="phone-screen"></div>
+                    </div>
+                </div>
+                <div class="phone-showcase secondary">
+                    <div class="phone-device">
+                        <div class="phone-screen borealis"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apps Section -->
+    <section class="apps-section" id="apps">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Aplicaciones Desarrolladas</h2>
+                <p class="section-subtitle">
+                    Soluciones móviles que aprovechan IA, análisis de datos en tiempo real 
+                    y interfaces adaptativas para resolver problemas reales.
+                </p>
+            </div>
+            
+            <div class="apps-grid">
+                <!-- BorealisClima -->
+                <div class="app-card fade-in">
+                    <div class="app-card-header">
+                        <div class="app-meta">
+                            <div class="app-icon-large">🌤️</div>
+                            <div class="app-info">
+                                <h3>BorealisClima</h3>
+                                <div class="app-category">Clima + Deportes + IA</div>
+                            </div>
+                        </div>
+                        <p class="app-description-card">
+                            Revoluciona la planificación deportiva con pronósticos inteligentes y 
+                            recomendaciones personalizadas para más de 12 deportes al aire libre.
+                        </p>
+                        <div class="app-badges">
+                            <span class="badge">Machine Learning</span>
+                            <span class="badge">APIs en Tiempo Real</span>
+                            <span class="badge">UI Adaptativa</span>
+                            <span class="badge">Análisis Deportivo</span>
+                        </div>
+                    </div>
+                    <div class="app-card-content">
+                        <ul class="features-list">
+                            <li class="feature-item">
+                                <div class="feature-icon">🧠</div>
+                                <div class="feature-text">
+                                    <strong>IA Deportiva:</strong> Algoritmos que analizan temperatura, viento, UV y humedad 
+                                    para generar recomendaciones específicas por deporte
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">📡</div>
+                                <div class="feature-text">
+                                    <strong>Datos en Tiempo Real:</strong> Integración con múltiples APIs meteorológicas 
+                                    para pronósticos precisos y actualizaciones automáticas
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">🎯</div>
+                                <div class="feature-text">
+                                    <strong>Personalización Avanzada:</strong> Modos IA y manual, horarios óptimos 
+                                    y análisis de condiciones ideales por actividad
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">📊</div>
+                                <div class="feature-text">
+                                    <strong>Analytics Detallados:</strong> Métricas de rendimiento, historial de condiciones 
+                                    y patrones climáticos para optimizar entrenamientos
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="app-links">
+                            <a href="https://play.google.com/store/apps/details?id=com.creiskyapps.borealisclima" 
+                               target="_blank" class="store-link">
+                                <span>📱</span>
+                                Ver en Play Store
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PillSync -->
+                <div class="app-card fade-in">
+                    <div class="app-card-header">
+                        <div class="app-meta">
+                            <div class="app-icon-large">💊</div>
+                            <div class="app-info">
+                                <h3>PillSync</h3>
+                                <div class="app-category">Medical App + Analytics + Multi-idioma</div>
+                            </div>
+                        </div>
+                        <p class="app-description-card">
+                            Tu asistente para organizar la toma de medicamentos. Sistema completo con 
+                            notificaciones inteligentes, estadísticas en tiempo real y diseño accesible 
+                            para todas las edades.
+                        </p>
+                        <div class="app-badges">
+                            <span class="badge">Material Design 3</span>
+                            <span class="badge">Firebase Analytics</span>
+                            <span class="badge">Hive Database</span>
+                            <span class="badge">3 Idiomas</span>
+                            <span class="badge">Android 7-15</span>
+                        </div>
+                    </div>
+                    <div class="app-card-content">
+                        <ul class="features-list">
+                            <li class="feature-item">
+                                <div class="feature-icon">🔔</div>
+                                <div class="feature-text">
+                                    <strong>Notificaciones Inteligentes:</strong> Sistema con acciones directas, 
+                                    sincronización en tiempo real y recordatorios de stock con validaciones completas
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">📊</div>
+                                <div class="feature-text">
+                                    <strong>Estadísticas Reales:</strong> Contadores dinámicos, tasa de cumplimiento 
+                                    en vivo y calendario con seguimiento visual completo de la adherencia
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">🏥</div>
+                                <div class="feature-text">
+                                    <strong>Cumplimiento Médico:</strong> Almacenamiento local seguro, privacidad GDPR, 
+                                    categoría Medical certificada para Play Store
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">🌍</div>
+                                <div class="feature-text">
+                                    <strong>Accesibilidad Global:</strong> Soporte completo en español, inglés y catalán 
+                                    con Material Design 3 optimizado para todas las edades
+                                </div>
+                            </li>
+                            <li class="feature-item">
+                                <div class="feature-icon">⚡</div>
+                                <div class="feature-text">
+                                    <strong>Rendimiento Optimizado:</strong> 18,000+ líneas de código, 64.6MB optimizados, 
+                                    soporte completo Android 15+ con páginas de 16kB
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="app-links">
+                            <a href="https://play.google.com/store/apps/details?id=com.pillsync.app" 
+                               target="_blank" class="store-link">
+                                <span>📱</span>
+                                Descargar de Play Store
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="sobre-mi">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text fade-in">
+                    <h2>Desarrollando el Futuro Móvil</h2>
+                    <p>
+                        Como desarrollador Flutter especializado, mi enfoque se centra en crear aplicaciones 
+                        que no solo funcionen perfectamente, sino que mejoren genuinamente la vida de las personas. 
+                        Combino expertise técnico con diseño centrado en el usuario.
+                    </p>
+                    <p>
+                        Mi especialización abarca desde integración de IA y machine learning hasta optimización 
+                        de rendimiento y diseño de interfaces adaptativas. Cada proyecto es una oportunidad 
+                        para democratizar el acceso a tecnología de calidad.
+                    </p>
+                    <p>
+                        <strong>Misión:</strong> Crear aplicaciones móviles que resuelvan problemas reales, 
+                        aprovechando las últimas tecnologías para ofrecer experiencias excepcionales y 
+                        accesibles para todos los usuarios.
+                    </p>
+                    
+                    <div class="tech-stack">
+                        <span class="tech-item">Flutter & Dart</span>
+                        <span class="tech-item">Firebase & Crashlytics</span>
+                        <span class="tech-item">Hive Database</span>
+                        <span class="tech-item">Material Design 3</span>
+                        <span class="tech-item">Local Notifications</span>
+                        <span class="tech-item">Multi-idioma (i18n)</span>
+                        <span class="tech-item">APIs REST</span>
+                        <span class="tech-item">Android SDK</span>
+                        <span class="tech-item">GDPR Compliance</span>
+                        <span class="tech-item">Play Store Optimization</span>
+                    </div>
+                </div>
+                <div class="about-visual fade-in">
+                    <div class="developer-card">
+                        <div class="developer-avatar"></div>
+                        <div class="developer-name">CreiskyApps</div>
+                        <div class="developer-title">Flutter Developer & AI Enthusiast</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section class="blog-section" id="blog">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Insights Técnicos</h2>
+                <p class="section-subtitle">
+                    Análisis profundos sobre desarrollo móvil, tendencias en Flutter, integración de IA 
+                    y mejores prácticas para crear aplicaciones excepcionales.
+                </p>
+            </div>
+            
+            <div class="blog-grid">
+                <article class="blog-card fade-in">
+                    <div class="blog-image">🚀</div>
+                    <div class="blog-content">
+                        <div class="blog-date">15 de Enero, 2025</div>
+                        <h3 class="blog-title">Flutter 2025: Tendencias que Definirán el Desarrollo Móvil</h3>
+                        <p class="blog-excerpt">
+                            Análisis exhaustivo de las características más prometedoras de Flutter para este año, 
+                            incluyendo mejoras en rendimiento, integración nativa de IA y la evolución hacia 
+                            un verdadero framework multiplataforma.
+                        </p>
+                        <a href="blog/flutter-2025-tendencias.html" class="read-more">
+                            Leer análisis completo
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">🏥</div>
+                    <div class="blog-content">
+                        <div class="blog-date">8 de Enero, 2025</div>
+                        <h3 class="blog-title">Desarrollando PillSync: De Idea a 18,000 Líneas de Código</h3>
+                        <p class="blog-excerpt">
+                            Case study completo del desarrollo de PillSync: desde la arquitectura Hive hasta 
+                            las notificaciones con acciones directas, Material Design 3, localización en 3 idiomas 
+                            y cumplimiento médico para Play Store.
+                        </p>
+                        <a href="blog/pillsync-desarrollo.html" class="read-more">
+                            Ver desarrollo completo
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">🌤️</div>
+                    <div class="blog-content">
+                        <div class="blog-date">2 de Enero, 2025</div>
+                        <h3 class="blog-title">IA en Apps Meteorológicas: Más Allá del Pronóstico</h3>
+                        <p class="blog-excerpt">
+                            Cómo integrar machine learning para crear recomendaciones deportivas inteligentes 
+                            basadas en condiciones climáticas. Implementación práctica con TensorFlow Lite 
+                            y análisis de datos meteorológicos en tiempo real.
+                        </p>
+                        <a href="blog/ia-apps-meteorologicas.html" class="read-more">
+                            Explorar implementación
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">🎨</div>
+                    <div class="blog-content">
+                        <div class="blog-date">28 de Diciembre, 2024</div>
+                        <h3 class="blog-title">UI/UX para Apps Móviles: Principios de Diseño Efectivo</h3>
+                        <p class="blog-excerpt">
+                            Estrategias avanzadas para crear interfaces que no solo se ven excepcionales, 
+                            sino que realmente mejoran la experiencia del usuario y fomentan el uso 
+                            continuado de la aplicación a largo plazo.
+                        </p>
+                        <a href="blog/ui-ux-apps-moviles.html" class="read-more">
+                            Descubrir estrategias
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">⚡</div>
+                    <div class="blog-content">
+                        <div class="blog-date">20 de Diciembre, 2024</div>
+                        <h3 class="blog-title">Optimización de Rendimiento en Flutter: Técnicas Avanzadas</h3>
+                        <p class="blog-excerpt">
+                            Métodos prácticos y probados para mejorar dramáticamente la velocidad de carga, 
+                            fluidez de animaciones y eficiencia de memoria en aplicaciones Flutter complejas 
+                            con grandes volúmenes de datos.
+                        </p>
+                        <a href="blog/optimizacion-rendimiento-flutter.html" class="read-more">
+                            Ver técnicas avanzadas
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">💰</div>
+                    <div class="blog-content">
+                        <div class="blog-date">22 de Enero, 2025</div>
+                        <h3 class="blog-title">Monetización de Apps Especializadas: Estrategias para Apps Nicho</h3>
+                        <p class="blog-excerpt">
+                            Estrategias probadas para monetizar aplicaciones especializadas como BorealisClima y PillSync: 
+                            desde modelos freemium hasta partnerships estratégicos.
+                        </p>
+                        <a href="blog/monetizacion-apps-especializadas.html" class="read-more">
+                            Explorar estrategias
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">🏗️</div>
+                    <div class="blog-content">
+                        <div class="blog-date">25 de Enero, 2025</div>
+                        <h3 class="blog-title">Arquitectura Técnica de BorealisClima: APIs y Algoritmos</h3>
+                        <p class="blog-excerpt">
+                            Análisis profundo de la arquitectura técnica detrás de BorealisClima: desde la integración 
+                            de APIs meteorológicas hasta los algoritmos de scoring deportivo.
+                        </p>
+                        <a href="blog/arquitectura-borealis-clima.html" class="read-more">
+                            Ver arquitectura completa
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card fade-in">
+                    <div class="blog-image">💊</div>
+                    <div class="blog-content">
+                        <div class="blog-date">8 de Enero, 2025</div>
+                        <h3 class="blog-title">Desarrollando Apps de Salud: Lecciones de PillSync</h3>
+                        <p class="blog-excerpt">
+                            Los desafíos únicos del desarrollo de aplicaciones médicas, desde la privacidad de datos 
+                            hasta el diseño centrado en la accesibilidad para usuarios de todas las edades.
+                        </p>
+                        <a href="blog/pillsync-desarrollo.html" class="read-more">
+                            Leer lecciones de salud
+                            <span>→</span>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contacto">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info fade-in">
+                    <h2>Transformemos tu Idea en Realidad</h2>
+                    <p>
+                        ¿Tienes una visión para una aplicación innovadora? ¿Necesitas consultoría especializada 
+                        en Flutter y desarrollo móvil? ¿Quieres integrar IA en tu proyecto existente? 
+                        Hablemos sobre cómo puedo ayudarte a crear algo extraordinario.
+                    </p>
+                    
+                    <div class="contact-links">
+                        <a href="mailto:creiskyapps09@gmail.com" class="contact-link">
+                            <div class="contact-icon">✉️</div>
+                            <div>
+                                <strong>Proyecto Nuevo</strong><br>
+                                creiskyapps09@gmail.com
+                            </div>
+                        </a>
+                        
+                        <a href="https://github.com/creiskyapps" target="_blank" class="contact-link">
+                            <div class="contact-icon">👨‍💻</div>
+                            <div>
+                                <strong>Código Abierto</strong><br>
+                                github.com/creiskyapps
+                            </div>
+                        </a>
+                        
+                        <a href="https://linkedin.com/in/creiskyapps" target="_blank" class="contact-link">
+                            <div class="contact-icon">🤝</div>
+                            <div>
+                                <strong>Red Profesional</strong><br>
+                                LinkedIn CreiskyApps
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                
+                <form class="contact-form fade-in">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Nombre</label>
+                        <input type="text" id="name" name="name" class="form-input" 
+                               placeholder="Tu nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-input" 
+                               placeholder="tu.email@ejemplo.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject" class="form-label">Tipo de Proyecto</label>
+                        <input type="text" id="subject" name="subject" class="form-input" 
+                               placeholder="App nueva, consultoría, integración IA..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message" class="form-label">Describe tu Visión</label>
+                        <textarea id="message" name="message" class="form-input form-textarea" required 
+                                  placeholder="Comparte los detalles de tu proyecto, objetivos, timeline y cualquier requisito específico..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Iniciar Conversación
+                        <span>🚀</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="logo-mark"></div>
+                CreiskyApps
+            </div>
+            <p class="footer-text">
+                © 2025 CreiskyApps. Desarrollando el futuro móvil, una app innovadora a la vez.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Enhanced navigation with smooth scrolling and active states
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.getElementById('header');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section[id]');
+
+            // Header scroll effect
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+
+                // Active navigation
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (window.scrollY >= sectionTop - 200) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Smooth scrolling for navigation
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            const mobileToggle = document.querySelector('.mobile-menu-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+
+            if (mobileToggle && navMenu) {
+                mobileToggle.addEventListener('click', () => {
+                    navMenu.style.display = navMenu.style.display === 'flex' ? 'none' : 'flex';
+                });
+            }
+
+            // Enhanced form submission
+            const contactForm = document.querySelector('.contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const name = formData.get('name');
+                    const email = formData.get('email');
+                    const subject = formData.get('subject');
+                    const message = formData.get('message');
+                    
+                    const mailtoLink = `mailto:creiskyapps09@gmail.com?subject=${encodeURIComponent(`Nuevo Proyecto: ${subject}`)}&body=${encodeURIComponent(
+                        `Hola CreiskyApps,\n\nNombre: ${name}\nEmail: ${email}\nTipo de Proyecto: ${subject}\n\nDetalles del Proyecto:\n${message}\n\nEspero tu respuesta para discutir los siguientes pasos.\n\nSaludos,\n${name}`
+                    )}`;
+                    
+                    window.location.href = mailtoLink;
+                    
+                    // Success feedback
+                    const button = this.querySelector('button[type="submit"]');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '¡Mensaje Preparado! 📧';
+                    button.style.background = 'var(--secondary)';
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 3000);
+                });
+            }
+
+            // Intersection Observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all fade-in elements
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Enhanced phone animations
+            const phoneDevices = document.querySelectorAll('.phone-device');
+            phoneDevices.forEach((phone, index) => {
+                phone.addEventListener('mouseenter', () => {
+                    phone.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                
+                phone.addEventListener('mouseleave', () => {
+                    phone.style.transform = '';
+                });
+
+                // Make phones clickable
+                phone.addEventListener('click', () => {
+                    if (index === 0) {
+                        // Primary phone - PillSync
+                        window.open('https://play.google.com/store/apps/details?id=com.pillsync.app', '_blank');
+                    } else {
+                        // Secondary phone - BorealisClima
+                        window.open('https://play.google.com/store/apps/details?id=com.creiskyapps.borealisclima', '_blank');
+                    }
+                });
+                
+                phone.style.cursor = 'pointer';
+            });
+        });
+    </script>
+</body>
+</html>

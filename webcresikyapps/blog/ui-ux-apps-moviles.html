@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI/UX en Apps Móviles: Principios y Mejores Prácticas - CreiskyApps</title>
+    <meta name="description" content="Guía completa sobre diseño de interfaces y experiencia de usuario en aplicaciones móviles, con ejemplos prácticos de PillSync y BorealisClima.">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099cc;
+            --secondary: #ff6b35;
+            --accent: #a855f7;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-light: #94a3b8;
+            --surface: #ffffff;
+            --surface-glass: rgba(255, 255, 255, 0.85);
+            --surface-dark: #020817;
+            --surface-card: rgba(255, 255, 255, 0.95);
+            --border: rgba(148, 163, 184, 0.2);
+            --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #a855f7 50%, #ff6b35 100%);
+            --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: radial-gradient(ellipse at top, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+                        #fafbfc;
+        }
+
+        .header {
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 1.25rem;
+        }
+
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-mark::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: white;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            transform: translate(-50%, -60%);
+        }
+
+        .logo-mark::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            width: 16px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .back-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: gap 0.2s ease;
+        }
+
+        .back-link:hover {
+            gap: 0.75rem;
+        }
+
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .article-header {
+            margin-bottom: 3rem;
+        }
+
+        .article-meta {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .article-date {
+            background: var(--surface-card);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .reading-time {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .article-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-excerpt {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .article-image {
+            width: 100%;
+            height: 300px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .article-content {
+            font-size: 1.125rem;
+            line-height: 1.8;
+        }
+
+        .article-content h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem 0;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content blockquote {
+            background: var(--surface-card);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        .highlight-box {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .highlight-box h4 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tech-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .tech-item {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .tech-item h4 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .code-block {
+            background: var(--surface-dark);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            background: var(--surface-dark);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .main {
+                padding: 2rem 1rem;
+            }
+
+            .article-title {
+                font-size: 2.5rem;
+            }
+
+            .tech-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../creiskyapps_website.html" class="logo">
+                <div class="logo-mark"></div>
+                CreiskyApps
+            </a>
+            <a href="../creiskyapps_website.html#blog" class="back-link">
+                ← Volver al Blog
+            </a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <article class="article">
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-date">Próximamente</span>
+                    <span class="reading-time">⏱️ 15 min lectura</span>
+                </div>
+                <h1 class="article-title">UI/UX en Apps Móviles: Principios y Mejores Prácticas</h1>
+                <p class="article-excerpt">
+                    Guía completa sobre diseño de interfaces y experiencia de usuario en aplicaciones móviles, 
+                    con ejemplos prácticos de PillSync y BorealisClima.
+                </p>
+                <div class="article-image">🎨</div>
+            </header>
+
+            <div class="article-content">
+                <p>Crear interfaces móviles excepcionales va más allá de seguir las guías de diseño. Requiere entender cómo los usuarios interactúan realmente con sus dispositivos y diseñar experiencias que no solo se ven bien, sino que realmente mejoran la vida de las personas.</p>
+
+                <h2>Los Fundamentos: Material Design 3 en Acción</h2>
+                <p>Material Design 3 no es solo una guía visual, es un sistema de diseño que prioriza la accesibilidad y la usabilidad. En nuestras aplicaciones, hemos aprendido que cada componente debe servir a un propósito específico.</p>
+
+                <div class="highlight-box">
+                    <h4>🎨 Principios de Material Design 3</h4>
+                    <ul>
+                        <li><strong>Dynamic Color:</strong> Adaptación automática a preferencias del usuario</li>
+                        <li><strong>Typography Scale:</strong> Jerarquía clara y legible en todos los tamaños</li>
+                        <li><strong>Elevation System:</strong> Profundidad visual que guía la atención</li>
+                        <li><strong>Motion Design:</strong> Transiciones que comunican cambio de estado</li>
+                    </ul>
+                </div>
+
+                <h2>Accesibilidad: Diseño para Todos</h2>
+                <p>El diseño accesible no es una opción, es una obligación. En PillSync, trabajamos con usuarios de 60+ años, lo que nos enseñó que la accesibilidad beneficia a todos los usuarios.</p>
+
+                <div class="tech-list">
+                    <div class="tech-item">
+                        <h4>👁️ Contraste Visual</h4>
+                        <p>Ratios de contraste 4.5:1 para texto normal, 3:1 para texto grande</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>👆 Tamaños de Toque</h4>
+                        <p>Áreas de toque mínimas de 44x44 puntos para dedos de todas las edades</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>🔊 Lectores de Pantalla</h4>
+                        <p>Semántica clara y etiquetas descriptivas para tecnologías asistivas</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>🎨 Indicadores Visuales</h4>
+                        <p>Feedback visual claro que no dependa solo del color</p>
+                    </div>
+                </div>
+
+                <h2>Interfaces Adaptativas: UI que Responde al Contexto</h2>
+                <p>En BorealisClima, la interfaz cambia según las condiciones meteorológicas. Esta adaptabilidad mejora la experiencia del usuario al proporcionar información contextual relevante.</p>
+
+                <div class="highlight-box">
+                    <h4>🌤️ Adaptación Contextual</h4>
+                    <ul>
+                        <li><strong>Colores Dinámicos:</strong> Azul para frío, naranja para calor</li>
+                        <li><strong>Iconografía Contextual:</strong> Iconos que reflejan las condiciones actuales</li>
+                        <li><strong>Contenido Prioritario:</strong> Información más relevante primero</li>
+                        <li><strong>Alertas Visuales:</strong> Indicadores claros para condiciones peligrosas</li>
+                    </ul>
+                </div>
+
+                <h2>Patrones de Navegación Efectivos</h2>
+                <p>La navegación debe ser intuitiva y predecible. Hemos identificado patrones que funcionan especialmente bien en aplicaciones móviles:</p>
+
+                <ul>
+                    <li><strong>Bottom Navigation:</strong> Para 3-5 secciones principales</li>
+                    <li><strong>Drawer Navigation:</strong> Para aplicaciones con muchas secciones</li>
+                    <li><strong>Tab Navigation:</strong> Para contenido relacionado</li>
+                    <li><strong>Floating Action Button:</strong> Para acciones primarias</li>
+                </ul>
+
+                <h2>Microinteracciones: El Diablo está en los Detalles</h2>
+                <p>Las microinteracciones son pequeños detalles que hacen que una aplicación se sienta pulida y responsiva. En nuestras apps, cada interacción está pensada para proporcionar feedback claro al usuario.</p>
+
+                <div class="tech-list">
+                    <div class="tech-item">
+                        <h4>✨ Feedback Visual</h4>
+                        <p>Animaciones sutiles que confirman acciones del usuario</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>🎯 Estados de Carga</h4>
+                        <p>Indicadores claros de progreso y estados de la aplicación</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>🔄 Transiciones Suaves</h4>
+                        <p>Movimientos que guían la atención del usuario</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>📳 Feedback Háptico</h4>
+                        <p>Vibraciones que confirman acciones importantes</p>
+                    </div>
+                </div>
+
+                <h2>Testing de Usabilidad: Datos Reales</h2>
+                <p>El testing de usabilidad no es opcional. Hemos implementado un sistema de métricas que nos permite entender cómo los usuarios interactúan realmente con nuestras aplicaciones.</p>
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Tasa de Retención</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">2.3s</div>
+                        <div class="stat-label">Tiempo Promedio de Tarea</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">94%</div>
+                        <div class="stat-label">Satisfacción del Usuario</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">0.8%</div>
+                        <div class="stat-label">Tasa de Error</div>
+                    </div>
+                </div>
+
+                <h2>Principios de Diseño Efectivo</h2>
+                <p>Después de desarrollar múltiples aplicaciones, hemos identificado principios que siempre funcionan:</p>
+
+                <div class="highlight-box">
+                    <h4>🎯 Los 5 Principios Fundamentales</h4>
+                    <ol>
+                        <li><strong>Claridad:</strong> Cada elemento debe tener un propósito claro</li>
+                        <li><strong>Consistencia:</strong> Patrones predecibles en toda la aplicación</li>
+                        <li><strong>Eficiencia:</strong> Menos pasos para completar tareas comunes</li>
+                        <li><strong>Accesibilidad:</strong> Usable por el mayor número de usuarios posible</li>
+                        <li><strong>Feedback:</strong> Respuesta clara a cada acción del usuario</li>
+                    </ol>
+                </div>
+
+                <h2>El Futuro del Diseño Móvil</h2>
+                <p>Las tendencias emergentes en diseño móvil incluyen:</p>
+
+                <ul>
+                    <li><strong>Diseño Adaptativo:</strong> Interfaces que se ajustan al contexto del usuario</li>
+                    <li><strong>IA en UX:</strong> Personalización automática basada en comportamiento</li>
+                    <li><strong>Realidad Aumentada:</strong> Superposición de información en el mundo real</li>
+                    <li><strong>Interfaces de Voz:</strong> Interacción natural mediante comandos de voz</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <h4>🚀 Próximos Pasos</h4>
+                    <p>Si estás diseñando tu próxima aplicación móvil, recuerda que el mejor diseño es invisible. Los usuarios no deberían notar el diseño, solo deberían poder usar la aplicación de manera intuitiva y eficiente.</p>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="logo-mark"></div>
+                CreiskyApps
+            </div>
+            <p>© 2025 CreiskyApps. Desarrollando el futuro móvil, una app innovadora a la vez.</p>
+        </div>
+    </footer>
+</body>
+</html>

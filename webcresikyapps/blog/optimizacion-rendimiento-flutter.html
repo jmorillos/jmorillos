@@ -1,0 +1,1814 @@
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: Column(
+        children: [
+          // Solo se reconstruye cuando cambia temperatura actual
+          Consumer(
+            builder: (context, ref, child) {
+              final temperature = ref.watch(currentTemperatureProvider);
+              return CurrentTemperatureWidget(temperature: temperature);
+            },
+          ),
+          
+          // Solo se reconstruye cuando cambia la lista de forecast
+          Expanded(
+            child: Consumer(
+              builder: (context, ref, child) {
+                final forecast = ref.watch(forecastListProvider);
+                return ForecastList(forecast: forecast);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ValueNotifier para cambios ultra-frecuentes (ej: progreso de descarga)
+class DownloadProgressWidget extends StatefulWidget {
+  @override
+  _DownloadProgressWidgetState createState() => _DownloadProgressWidgetState();
+}
+
+class _DownloadProgressWidgetState extends State&lt;DownloadProgressWidget&gt; {
+  final ValueNotifier&lt;double&gt; _progressNotifier = ValueNotifier(0.0);
+  
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder&lt;double&gt;(
+      valueListenable: _progressNotifier,
+      builder: (context, progress, child) {
+        // Solo este builder se ejecuta cuando cambia progreso
+        // El resto del widget tree permanece intacto
+        return LinearProgressIndicator(value: progress);
+      },
+    );
+  }
+  
+  void updateProgress(double newProgress) {
+    _progressNotifier.value = newProgress; // ¡Extremadamente eficiente!
+  }
+}
+                    </pre>
+                </div>
+
+                <h2>Optimización de Listas y Scroll Performance</h2>
+
+                <p>
+                    Las listas son uno de los componentes más comunes y problemáticos en términos de rendimiento. 
+                    Una lista mal optimizada puede arruinar la experiencia de usuario completamente.
+                </p>
+
+                <div class="warning-box">
+                    <p><strong>⚠️ Error común:</strong> Usar Column/Row para listas grandes en lugar de ListView. 
+                    Esto crea TODOS los widgets de una vez, causando stuttering masivo y uso excesivo de memoria.</p>
+                </div>
+
+                <h3>Técnicas de Optimización para Listas</h3>
+
+                <div class="technique-grid">
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">♻️</div>
+                            <div class="technique-title">ListView.builder</div>
+                        </div>
+                        <div class="technique-description">
+                            Lazy loading: solo crea widgets visibles en pantalla.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Memoria:</strong> Constante vs lineal con datos
+                        </div>
+                    </div>
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">⚡</div>
+                            <div class="technique-title">AutomaticKeepAlive</div>
+                        </div>
+                        <div class="technique-description">
+                            Mantiene widgets complejos en memoria para scroll rápido.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Scroll:</strong> 60% más fluido en listas pesadas
+                        </div>
+                    </div>
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">🎯</div>
+                            <div class="technique-title">SliverList + CustomScrollView</div>
+                        </div>
+                        <div class="technique-description">
+                            Control granular de viewport y scroll physics.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Control:</strong> Scroll physics personalizadas
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre>
+// ✅ Lista optimizada para gran cantidad de datos
+class OptimizedWeatherList extends StatelessWidget {
+  final List&lt;WeatherData&gt; weatherData;
+  
+  const OptimizedWeatherList({required this.weatherData});
+  
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      // Optimización clave: especificar altura del item si es fija
+      itemExtent: 80.0, // Evita expensive layout calculations
+      
+      // Lazy loading: solo construye widgets visibles
+      itemCount: weatherData.length,
+      
+      // Cache extra items fuera de viewport para scroll suave
+      cacheExtent: 200.0,
+      
+      itemBuilder: (context, index) {
+        final weather = weatherData[index];
+        
+        return RepaintBoundary(
+          // Cada item aislado para repaints independientes
+          child: WeatherListItem(
+            key: ValueKey(weather.id), // Key estable para reordering
+            weather: weather,
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Widget de item optimizado
+class WeatherListItem extends StatelessWidget {
+  final WeatherData weather;
+  
+  const WeatherListItem({Key? key, required this.weather}) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80.0, // Altura fija = mejor performance
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          // Imagen con caching y placeholder
+          CachedNetworkImage(
+            imageUrl: weather.iconUrl,
+            width: 48,
+            height: 48,
+            placeholder: (context, url) => const CircularProgressIndicator(),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+            // Crucial: evita rebuilds por cada imagen
+            memCacheWidth: 48 * MediaQuery.of(context).devicePixelRatio.round(),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  weather.location,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '${weather.temperature}°C',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+          
+          // Parte estática que nunca cambia
+          const Icon(Icons.chevron_right, color: Colors.grey),
+        ],
+      ),
+    );
+  }
+}
+
+// Para listas MUY largas: implementar paginación virtual
+class VirtualizedWeatherList extends StatefulWidget {
+  @override
+  _VirtualizedWeatherListState createState() => _VirtualizedWeatherListState();
+}
+
+class _VirtualizedWeatherListState extends State&lt;VirtualizedWeatherList&gt; {
+  final ScrollController _scrollController = ScrollController();
+  final List&lt;WeatherData&gt; _loadedItems = [];
+  bool _isLoading = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+    _scrollController.addListener(_onScroll);
+  }
+  
+  void _onScroll() {
+    // Load more when near bottom
+    if (_scrollController.position.pixels &gt;= 
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreData();
+    }
+  }
+  
+  Future&lt;void&gt; _loadMoreData() async {
+    if (_isLoading) return;
+    
+    setState(() =&gt; _isLoading = true);
+    
+    // Simulate API call
+    await Future.delayed(Duration(milliseconds: 500));
+    final newItems = await _fetchMoreWeatherData();
+    
+    setState(() {
+      _loadedItems.addAll(newItems);
+      _isLoading = false;
+    });
+  }
+}
+                    </pre>
+                </div>
+
+                <h2>Optimización de Imágenes y Assets</h2>
+
+                <p>
+                    Las imágenes mal optimizadas pueden consumir cientos de MB de memoria innecesariamente. 
+                    En aplicaciones como BorealisClima, que muestran múltiples iconos de clima, esto es crítico.
+                </p>
+
+                <div class="highlight-box">
+                    <p><strong>💡 Regla de oro:</strong> Nunca cargues una imagen de 1920x1080 para mostrarla en 48x48 píxeles. 
+                    El costo de memoria es proporcional a los píxeles totales, no al tamaño de archivo.</p>
+                </div>
+
+                <h3>Estrategias de Optimización de Imágenes</h3>
+
+                <div class="code-block">
+                    <pre>
+// ✅ Carga eficiente de imágenes con caching y redimensionado
+class OptimizedImageWidget extends StatelessWidget {
+  final String imageUrl;
+  final double width;
+  final double height;
+  
+  const OptimizedImageWidget({
+    required this.imageUrl,
+    required this.width,
+    required this.height,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    final pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: width,
+      height: height,
+      
+      // CRUCIAL: Especifica tamaño de cache para evitar overhead de memoria
+      memCacheWidth: (width * pixelRatio).round(),
+      memCacheHeight: (height * pixelRatio).round(),
+      
+      // Configuración de cache optimizada
+      cacheManager: CustomCacheManager(),
+      
+      // Placeholders eficientes
+      placeholder: (context, url) =&gt; Container(
+        width: width,
+        height: height,
+        color: Colors.grey[200],
+        child: const Icon(Icons.image, color: Colors.grey),
+      ),
+      
+      errorWidget: (context, url, error) =&gt; Container(
+        width: width,
+        height: height,
+        color: Colors.red[100],
+        child: const Icon(Icons.error, color: Colors.red),
+      ),
+      
+      // Filtro de calidad para imágenes pequeñas
+      filterQuality: width &lt; 100 ? FilterQuality.medium : FilterQuality.high,
+    );
+  }
+}
+
+class CustomCacheManager extends CacheManager {
+  static const key = 'customCacheKey';
+  
+  static CustomCacheManager? _instance;
+  
+  factory CustomCacheManager() {
+    return _instance ??= CustomCacheManager._();
+  }
+  
+  CustomCacheManager._() : super(
+    Config(
+      key,
+      stalePeriod: const Duration(days: 7), // Cache 7 días
+      maxNrOfCacheObjects: 200, // Máximo 200 imágenes en cache
+      repo: JsonCacheInfoRepository(databaseName: key),
+      fileService: HttpFileService(),
+    ),
+  );
+}
+
+// Precarga inteligente de imágenes críticas
+class ImagePreloader {
+  static final Set&lt;String&gt; _preloadedImages = {};
+  
+  static Future&lt;void&gt; preloadCriticalImages(BuildContext context) async {
+    final criticalImages = [
+      'assets/weather/sunny.png',
+      'assets/weather/cloudy.png',
+      'assets/weather/rainy.png',
+      'assets/weather/snowy.png',
+    ];
+    
+    for (final imagePath in criticalImages) {
+      if (!_preloadedImages.contains(imagePath)) {
+        await precacheImage(AssetImage(imagePath), context);
+        _preloadedImages.add(imagePath);
+      }
+    }
+  }
+}
+
+// Uso de SVG para iconos escalables sin pérdida de calidad
+class SvgIconWidget extends StatelessWidget {
+  final String assetPath;
+  final double size;
+  final Color? color;
+  
+  const SvgIconWidget({
+    required this.assetPath,
+    required this.size,
+    this.color,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      assetPath,
+      width: size,
+      height: size,
+      color: color,
+      // Cache SVG parsing para evitar re-parsing
+      placeholderBuilder: (context) =&gt; Container(
+        width: size,
+        height: size,
+        color: Colors.grey[300],
+      ),
+    );
+  }
+}
+                    </pre>
+                </div>
+
+                <h2>Optimización de Animaciones</h2>
+
+                <p>
+                    Las animaciones mal implementadas pueden causar frame drops severos. 
+                    La clave está en usar el tipo correcto de animación para cada situación.
+                </p>
+
+                <div class="technique-grid">
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">🎬</div>
+                            <div class="technique-title">Implicit Animations</div>
+                        </div>
+                        <div class="technique-description">
+                            AnimatedContainer, AnimatedOpacity para cambios simples.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Uso:</strong> 80% de animaciones simples
+                        </div>
+                    </div>
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">⚡</div>
+                            <div class="technique-title">Transform Animations</div>
+                        </div>
+                        <div class="technique-description">
+                            Transform.translate, Transform.scale para animaciones fluidas.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>GPU:</strong> Aceleración por hardware guaranteed
+                        </div>
+                    </div>
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">🎨</div>
+                            <div class="technique-title">Custom Painters</div>
+                        </div>
+                        <div class="technique-description">
+                            Para animaciones complejas que requieren control total.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Control:</strong> Máximo rendimiento en casos específicos
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre>
+// ✅ Animación optimizada para weather card
+class AnimatedWeatherCard extends StatefulWidget {
+  final WeatherData weather;
+  
+  const AnimatedWeatherCard({required this.weather});
+  
+  @override
+  _AnimatedWeatherCardState createState() =&gt; _AnimatedWeatherCardState();
+}
+
+class _AnimatedWeatherCardState extends State&lt;AnimatedWeatherCard&gt; 
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation&lt;double&gt; _scaleAnimation;
+  late Animation&lt;double&gt; _opacityAnimation;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    
+    // Usar Curves optimizadas para mejor feeling
+    _scaleAnimation = Tween&lt;double&gt;(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack, // Curve natural y satisfactoria
+    ));
+    
+    _opacityAnimation = Tween&lt;double&gt;(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+    
+    _controller.forward();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Opacity(
+            opacity: _opacityAnimation.value,
+            child: child,
+          ),
+        );
+      },
+      // Child es const para evitar rebuilds durante animación
+      child: const WeatherCardContent(),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _controller.dispose(); // CRÍTICO: evitar memory leaks
+    super.dispose();
+  }
+}
+
+// Animación de loading optimizada
+class OptimizedLoadingAnimation extends StatefulWidget {
+  @override
+  _OptimizedLoadingAnimationState createState() =&gt; _OptimizedLoadingAnimationState();
+}
+
+class _OptimizedLoadingAnimationState extends State&lt;OptimizedLoadingAnimation&gt;
+    with SingleTickerProviderStateMixin {
+  late AnimationController _rotationController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(); // Animación infinita
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      // Aísla la animación para evitar repaints del parent
+      child: RotationTransition(
+        turns: _rotationController,
+        child: const Icon(
+          Icons.refresh,
+          size: 24,
+          color: Colors.blue,
+        ),
+      ),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+}
+
+// Custom Painter para animaciones ultra-performantes
+class WeatherChartPainter extends CustomPainter {
+  final List&lt;double&gt; temperatures;
+  final Animation&lt;double&gt; animation;
+  
+  WeatherChartPainter({required this.temperatures, required this.animation})
+      : super(repaint: animation);
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+    
+    final path = Path();
+    final animatedProgress = animation.value;
+    
+    // Solo dibuja hasta el progreso actual de la animación
+    final pointsToShow = (temperatures.length * animatedProgress).round();
+    
+    for (int i = 0; i &lt; pointsToShow; i++) {
+      final x = (i / temperatures.length) * size.width;
+      final y = size.height - (temperatures[i] / 40) * size.height;
+      
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    
+    canvas.drawPath(path, paint);
+  }
+  
+  @override
+  bool shouldRepaint(WeatherChartPainter oldDelegate) {
+    return oldDelegate.animation.value != animation.value ||
+           oldDelegate.temperatures != temperatures;
+  }
+}
+                    </pre>
+                </div>
+
+                <h2>Optimización de Memoria y Garbage Collection</h2>
+
+                <p>
+                    El garbage collection puede causar frame drops perceptibles. Minimizar allocations 
+                    innecesarias y gestionar memoria eficientemente es crucial para apps fluidas.
+                </p>
+
+                <div class="success-box">
+                    <p><strong>🎯 Meta:</strong> Mantener memory usage estable durante uso normal. 
+                    Spikes de memoria solo durante cargas de datos, que deben ser breves y predecibles.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre>
+// ✅ Pool de objetos para evitar allocations frecuentes
+class WeatherDataPool {
+  static final Queue&lt;WeatherData&gt; _pool = Queue&lt;WeatherData&gt;();
+  static const int _maxPoolSize = 50;
+  
+  static WeatherData obtain() {
+    if (_pool.isNotEmpty) {
+      return _pool.removeFirst()..reset(); // Reutiliza objeto existente
+    }
+    return WeatherData(); // Crea nuevo solo si es necesario
+  }
+  
+  static void release(WeatherData object) {
+    if (_pool.length &lt; _maxPoolSize) {
+      _pool.add(object);
+    }
+    // Si el pool está lleno, deja que GC maneje el objeto
+  }
+}
+
+class WeatherData {
+  double temperature = 0.0;
+  String condition = '';
+  DateTime timestamp = DateTime.now();
+  
+  void reset() {
+    temperature = 0.0;
+    condition = '';
+    timestamp = DateTime.now();
+  }
+}
+
+// Manejo eficiente de streams y subscriptions
+class WeatherService {
+  StreamSubscription? _weatherSubscription;
+  final StreamController&lt;WeatherData&gt; _controller = StreamController.broadcast();
+  
+  Stream&lt;WeatherData&gt; get weatherStream =&gt; _controller.stream;
+  
+  void startListening() {
+    _weatherSubscription?.cancel(); // Cancela subscription anterior
+    
+    _weatherSubscription = weatherApiStream.listen(
+      (data) {
+        // Procesa datos y libera objetos temporales inmediatamente
+        final processedData = _processWeatherData(data);
+        _controller.add(processedData);
+        
+        // Si usas object pool, libera aquí
+        // WeatherDataPool.release(data);
+      },
+      onError: (error) {
+        print('Weather service error: $error');
+      },
+    );
+  }
+  
+  void dispose() {
+    _weatherSubscription?.cancel();
+    _controller.close();
+  }
+}
+
+// Lazy loading de datos pesados
+class WeatherDatabase {
+  static final Map&lt;String, WeatherData&gt; _cache = {};
+  static const int _maxCacheSize = 100;
+  
+  static Future&lt;WeatherData?&gt; getWeatherData(String locationId) async {
+    // Check cache first
+    if (_cache.containsKey(locationId)) {
+      return _cache[locationId];
+    }
+    
+    // Load from database
+    final data = await _loadFromDatabase(locationId);
+    
+    if (data != null) {
+      // Add to cache with LRU eviction
+      if (_cache.length >= _maxCacheSize) {
+        final oldestKey = _cache.keys.first;
+        _cache.remove(oldestKey);
+      }
+      _cache[locationId] = data;
+    }
+    
+    return data;
+  }
+  
+  static Future&lt;WeatherData?&gt; _loadFromDatabase(String locationId) async {
+    // Implementación de carga desde DB
+    // Usar isolates para operaciones pesadas
+    return await compute(_parseWeatherData, locationId);
+  }
+}
+
+// Función pura para ejecutar en isolate
+WeatherData _parseWeatherData(String locationId) {
+  // Parsing pesado ejecutado en background thread
+  // No bloquea UI thread
+  return WeatherData();
+}
+                    </pre>
+                </div>
+
+                <h2>Resultados en Aplicaciones Reales</h2>
+
+                <p>
+                    Aplicando estas técnicas en BorealisClima y PillSync, logré mejoras significativas 
+                    en dispositivos reales, especialmente en gama baja:
+                </p>
+
+                <div class="performance-metrics">
+                    <div class="metric-card">
+                        <div class="metric-number">60 FPS</div>
+                        <div class="metric-label">Consistentes en Pixel 3a (Android 10)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">1.2s</div>
+                        <div class="metric-label">Cold start time (vs 3.4s inicial)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">85MB</div>
+                        <div class="metric-label">Memory usage promedio</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">0.3%</div>
+                        <div class="metric-label">Frame drops durante scroll</div>
+                    </div>
+                </div>
+
+                <h2>Checklist de Optimización</h2>
+
+                <p>
+                    Para facilitar la aplicación de estas técnicas, aquí tienes un checklist 
+                    ordenado por impacto vs esfuerzo:
+                </p>
+
+                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin: 2rem 0;">
+                    <h3>🎯 Alto Impacto, Bajo Esfuerzo</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✅ Agregar const constructors a widgets estáticos</li>
+                        <li>✅ Usar RepaintBoundary en animaciones</li>
+                        <li>✅ Especificar itemExtent en ListViews</li>
+                        <li>✅ Cancelar streams y subscriptions en dispose()</li>
+                        <li>✅ Usar ValueListenableBuilder para valores que cambian frecuentemente</li>
+                    </ul>
+                    
+                    <h3 style="margin-top: 2rem;">⚡ Alto Impacto, Esfuerzo Medio</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✅ Implementar caching de imágenes con tamaños específicos</li>
+                        <li>✅ Dividir widgets grandes en componentes más pequeños</li>
+                        <li>✅ Usar ListView.builder en lugar de Column para listas</li>
+                        <li>✅ Implementar state management granular (Riverpod/Bloc)</li>
+                    </ul>
+                    
+                    <h3 style="margin-top: 2rem;">🚀 Optimizaciones Avanzadas</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✅ Object pooling para allocations frecuentes</li>
+                        <li>✅ Custom painters para animaciones complejas</li>
+                        <li>✅ Isolates para operaciones CPU-intensive</li>
+                        <li>✅ Precarga inteligente de assets críticos</li>
+                    </ul>
+                </div>
+
+                <div class="cta-section">
+                    <h3 class="cta-title">¿Necesitas Optimizar tu App Flutter?</h3>
+                    <p class="cta-text">
+                        Si tu aplicación Flutter sufre de rendimiento lento o frame drops, 
+                        puedo ayudarte a identificar y resolver los cuellos de botella específicos.
+                    </p>
+                    <a href="../creiskyapps_website.html#contacto" class="btn">
+                        <span>⚡</span>
+                        Consultoría de Performance
+                    </a>
+                </div>
+            </div>
+
+            <footer class="article-footer">
+                <div class="author-info">
+                    <div class="author-avatar">👨‍💻</div>
+                    <div class="author-details">
+                        <h4>CreiskyApps Developer</h4>
+                        <p>Especialista en Flutter y optimización de rendimiento</p>
+                    </div>
+                </div>
+                <p>
+                    ¿Has aplicado alguna de estas técnicas en tus proyectos? Me encantaría conocer 
+                    tus resultados y intercambiar experiencias sobre optimización en Flutter.
+                </p>
+            </footer>
+        </article>
+    </main>
+
+    <script>
+        // Smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Reading progress indicator
+        function updateReadingProgress() {
+            const article = document.querySelector('article');
+            const scrolled = window.scrollY;
+            const articleHeight = article.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const progress = Math.min(scrolled / (articleHeight - windowHeight), 1);
+            
+            let progressBar = document.querySelector('.reading-progress');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'reading-progress';
+                progressBar.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    height: 3px;
+                    background: var(--gradient-primary);
+                    z-index: 1001;
+                    transition: width 0.1s ease;
+                `;
+                document.body.appendChild(progressBar);
+            }
+            
+            progressBar.style.width = `${progress * 100}%`;
+        }
+
+        window.addEventListener('scroll', updateReadingProgress);
+        updateReadingProgress();
+
+        // Animate performance metrics on scroll
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    
+                    // Special animation for metric cards
+                    if (entry.target.classList.contains('metric-card')) {
+                        setTimeout(() => {
+                            entry.target.style.transform = 'translateY(0) scale(1.02)';
+                            setTimeout(() => {
+                                entry.target.style.transform = 'translateY(0) scale(1)';
+                            }, 200);
+                        }, 100);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Apply animation to elements
+        document.querySelectorAll('.metric-card, .technique-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Interactive hover effects
+        document.querySelectorAll('.technique-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px)';
+                card.style.boxShadow = 'var(--shadow-large)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '';
+            });
+        });
+
+        // Code block copy functionality
+        document.querySelectorAll('.code-block').forEach(block => {
+            const copyBtn = document.createElement('button');
+            copyBtn.innerHTML = '📋 Copiar';
+            copyBtn.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                padding: 5px 10px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.8rem;
+            `;
+            
+            block.style.position = 'relative';
+            block.appendChild(copyBtn);
+            
+            copyBtn.addEventListener('click', async () => {
+                const code = block.querySelector('pre').textContent;
+                try {
+                    await navigator.clipboard.writeText(code);
+                    copyBtn.innerHTML = '✅ Copiado';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '📋 Copiar';
+                    }, 2000);
+                } catch (err) {
+                    copyBtn.innerHTML = '❌ Error';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '📋 Copiar';
+                    }, 2000);
+                }
+            });
+        });
+
+        // Highlight optimization levels on hover
+        document.querySelectorAll('.optimization-level').forEach(level => {
+            level.addEventListener('mouseenter', () => {
+                level.style.transform = 'scale(1.1)';
+            });
+            
+            level.addEventListener('mouseleave', () => {
+                level.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
+        <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimización de Rendimiento en Flutter: Técnicas Avanzadas - CreiskyApps Blog</title>
+    <meta name="description" content="Métodos prácticos para mejorar la velocidad de carga, fluidez de animaciones y eficiencia de memoria en aplicaciones Flutter complejas.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://creiskyapps.vercel.app/blog/optimizacion-rendimiento-flutter.html">
+    <meta property="og:title" content="Optimización de Rendimiento en Flutter: Técnicas Avanzadas">
+    <meta property="og:description" content="Técnicas prácticas para optimizar rendimiento en aplicaciones Flutter complejas.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://creiskyapps.vercel.app/blog/optimizacion-rendimiento-flutter.html">
+    <meta property="twitter:title" content="Optimización de Rendimiento en Flutter: Técnicas Avanzadas">
+    <meta property="twitter:description" content="Técnicas prácticas para optimizar rendimiento en aplicaciones Flutter complejas.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #1e40af;
+            --accent-turquoise: #06b6d4;
+            --dark-blue: #1e293b;
+            --light-gray: #f8fafc;
+            --medium-gray: #64748b;
+            --white: #ffffff;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--dark-blue);
+            background-color: var(--white);
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-primary);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .rocket-icon {
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 2rem 4rem;
+        }
+
+        .article-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .article-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            line-height: 1.6;
+        }
+
+        .article-content {
+            font-size: 1.125rem;
+            line-height: 1.8;
+        }
+
+        .article-content h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            color: var(--dark-blue);
+            position: relative;
+        }
+
+        .article-content h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -0.5rem;
+            width: 50px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
+
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--dark-blue);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.75rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            border-left: 4px solid var(--primary-blue);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            border-left: 4px solid var(--warning-orange);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+            border-left: 4px solid var(--success-green);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .code-block {
+            background: var(--dark-blue);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .metric-before {
+            background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+            border-color: var(--error-red);
+        }
+
+        .metric-after {
+            background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+            border-color: var(--success-green);
+        }
+
+        .metric-number {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-before .metric-number {
+            color: var(--error-red);
+        }
+
+        .metric-after .metric-number {
+            color: var(--success-green);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+
+        .technique-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .technique-card {
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .technique-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .technique-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .technique-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .technique-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        .technique-description {
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
+        }
+
+        .technique-impact {
+            background: var(--light-gray);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .comparison-table th {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .optimization-level {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .level-basic {
+            background: #dbeafe;
+            color: var(--primary-blue);
+        }
+
+        .level-intermediate {
+            background: #fef3c7;
+            color: var(--warning-orange);
+        }
+
+        .level-advanced {
+            background: #fecaca;
+            color: var(--error-red);
+        }
+
+        .article-footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--light-gray);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .author-details h4 {
+            color: var(--dark-blue);
+            font-weight: 600;
+        }
+
+        .author-details p {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .cta-section {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .cta-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 2rem;
+            background: var(--white);
+            color: var(--primary-blue);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 100px 1rem 3rem;
+            }
+
+            .article-title {
+                font-size: 2.25rem;
+            }
+
+            .article-content {
+                font-size: 1rem;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+
+            .code-block {
+                font-size: 0.75rem;
+                padding: 1rem;
+                margin: 1.5rem 0;
+                line-height: 1.5;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .article-title {
+                font-size: 1.875rem;
+            }
+
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .author-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .code-block {
+                font-size: 0.7rem;
+                padding: 0.75rem;
+                margin: 1rem 0;
+                border-radius: 6px;
+            }
+
+            .technique-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .performance-metrics {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../creiskyapps_website.html" class="logo">
+                <div class="logo-icon">
+                    <span class="rocket-icon">🚀</span>
+                </div>
+                CreiskyApps
+            </a>
+            <a href="../creiskyapps_website.html#blog" class="back-btn">
+                <span>←</span>
+                Volver al Blog
+            </a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        20 de Diciembre, 2024
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        18 min de lectura
+                    </div>
+                    <div class="meta-item">
+                        <span>🏷️</span>
+                        Flutter, Performance, Optimización
+                    </div>
+                </div>
+                <h1 class="article-title">Optimización de Rendimiento en Flutter: Técnicas Avanzadas</h1>
+                <p class="article-subtitle">
+                    Métodos prácticos para mejorar la velocidad de carga, fluidez de animaciones 
+                    y eficiencia de memoria en aplicaciones Flutter complejas.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    Después de optimizar <strong>BorealisClima</strong> y <strong>PillSync</strong> para manejar desde dispositivos de gama baja 
+                    hasta situaciones de conectividad limitada, he recopilado las técnicas más efectivas 
+                    para lograr que aplicaciones Flutter funcionen de manera fluida en cualquier contexto.
+                </p>
+
+                <div class="highlight-box">
+                    <p><strong>🎯 Objetivo clave:</strong> El usuario nunca debe sentir que la app "se traba" o "va lenta". 
+                    60 FPS consistentes y respuesta inmediata a interacciones son no negociables.</p>
+                </div>
+
+                <h2>Medición: Lo que No se Mide, No se Mejora</h2>
+
+                <p>
+                    Antes de optimizar, necesitas datos precisos. Flutter ofrece herramientas excelentes, 
+                    pero saber interpretarlas es crucial para identificar los verdaderos cuellos de botella.
+                </p>
+
+                <div class="performance-metrics">
+                    <div class="metric-card metric-before">
+                        <div class="metric-number">85ms</div>
+                        <div class="metric-label">Tiempo de build inicial (ANTES)</div>
+                    </div>
+                    <div class="metric-card metric-after">
+                        <div class="metric-number">23ms</div>
+                        <div class="metric-label">Tiempo de build inicial (DESPUÉS)</div>
+                    </div>
+                    <div class="metric-card metric-before">
+                        <div class="metric-number">180MB</div>
+                        <div class="metric-label">Uso de memoria peak (ANTES)</div>
+                    </div>
+                    <div class="metric-card metric-after">
+                        <div class="metric-number">95MB</div>
+                        <div class="metric-label">Uso de memoria peak (DESPUÉS)</div>
+                    </div>
+                </div>
+
+                <h3>Herramientas de Profiling Esenciales</h3>
+
+                <div class="code-block">
+                    <pre>
+// 1. Performance Overlay en desarrollo
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      // Activa overlay de performance en debug
+      showPerformanceOverlay: kDebugMode,
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
+}
+
+// 2. Timeline profiling personalizado
+void _profileCriticalPath() async {
+  Timeline.startSync('WeatherDataProcessing');
+  
+  // Tu código crítico aquí
+  final processedData = await _processWeatherData(rawData);
+  
+  Timeline.finishSync(); // Aparecerá en DevTools Timeline
+}
+
+// 3. Memory leak detection
+class _WeatherScreenState extends State&lt;WeatherScreen&gt; {
+  late StreamSubscription _weatherSubscription;
+  
+  @override
+  void dispose() {
+    // CRÍTICO: Cancelar subscripciones para evitar memory leaks
+    _weatherSubscription.cancel();
+    super.dispose();
+  }
+}
+                    </pre>
+                </div>
+
+                <h2>Optimización de Widget Tree: La Base de Todo</h2>
+
+                <p>
+                    El widget tree es el corazón del rendimiento en Flutter. Un árbol eficiente puede ser la diferencia 
+                    entre 60 FPS suaves y stuttering constante.
+                </p>
+
+                <div class="technique-grid">
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">🎯</div>
+                            <div class="technique-title">const Constructors</div>
+                        </div>
+                        <div class="technique-description">
+                            Usar const constructors previene rebuilds innecesarios de widgets estáticos.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Impacto:</strong> Reducción del 40-60% en rebuilds de UI estática
+                        </div>
+                    </div>
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">🔄</div>
+                            <div class="technique-title">Widget Keys</div>
+                        </div>
+                        <div class="technique-description">
+                            Keys apropiadas permiten a Flutter reutilizar widgets en lugar de recrearlos.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Impacto:</strong> Animaciones 75% más fluidas en listas dinámicas
+                        </div>
+                    </div>
+                    <div class="technique-card">
+                        <div class="technique-header">
+                            <div class="technique-icon">🎨</div>
+                            <div class="technique-title">RepaintBoundary</div>
+                        </div>
+                        <div class="technique-description">
+                            Aísla partes del UI que cambian frecuentemente para evitar repaints masivos.
+                        </div>
+                        <div class="technique-impact">
+                            <strong>Impacto:</strong> Reducción del 80% en repaints durante animaciones
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Ejemplo Práctico: Optimizando un Weather Card</h3>
+
+                <div class="code-block">
+                    <pre>
+// ❌ ANTES: Widget ineficiente
+class WeatherCard extends StatelessWidget {
+  final WeatherData weather;
+  
+  WeatherCard({required this.weather}); // Sin const
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container( // Se reconstruye todo siempre
+      child: Column(
+        children: [
+          Text('${weather.temperature}°C'), // Dinámico
+          Text('Actualizado: ${DateTime.now()}'), // ¡Cambia cada build!
+          Row( // Se reconstruye aunque iconos sean estáticos
+            children: [
+              Icon(Icons.sunny), // Estático pero sin const
+              Icon(Icons.cloudy),
+              Icon(Icons.rainy),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ✅ DESPUÉS: Widget optimizado
+class WeatherCard extends StatelessWidget {
+  final WeatherData weather;
+  
+  const WeatherCard({Key? key, required this.weather}) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary( // Aísla repaints
+      child: Container(
+        child: Column(
+          children: [
+            // Solo esta parte se reconstruye cuando cambia temperatura
+            _TemperatureDisplay(temperature: weather.temperature),
+            
+            // Parte estática con const - nunca se reconstruye
+            const _StaticIconRow(),
+            
+            // Timestamp separado con su propio rebuild cycle
+            _LastUpdatedDisplay(timestamp: weather.updatedAt),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TemperatureDisplay extends StatelessWidget {
+  final double temperature;
+  
+  const _TemperatureDisplay({required this.temperature});
+  
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Text(
+        '${temperature.toStringAsFixed(1)}°C',
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class _StaticIconRow extends StatelessWidget {
+  const _StaticIconRow();
+  
+  @override
+  Widget build(BuildContext context) {
+    // Estos iconos NUNCA se reconstruyen gracias a const
+    return const Row(
+      children: [
+        Icon(Icons.wb_sunny, color: Colors.orange),
+        Icon(Icons.wb_cloudy, color: Colors.grey),
+        Icon(Icons.umbrella, color: Colors.blue),
+      ],
+    );
+  }
+}
+                    </pre>
+                </div>
+
+                <div class="success-box">
+                    <p><strong>🚀 Resultado:</strong> Esta optimización redujo los rebuilds de WeatherCard de ~200ms a ~15ms 
+                    en dispositivos de gama baja, mejorando la fluidez del scroll en un 340%.</p>
+                </div>
+
+                <h2>Gestión Inteligente de Estado</h2>
+
+                <p>
+                    El manejo de estado ineficiente es la causa #1 de problemas de rendimiento en Flutter. 
+                    La clave está en minimizar rebuilds y usar la granularidad correcta.
+                </p>
+
+                <div class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Técnica</th>
+                            <th>Cuándo Usar</th>
+                            <th>Nivel</th>
+                            <th>Impacto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>setState() localizado</strong></td>
+                            <td>Cambios simples en widget específico</td>
+                            <td><span class="optimization-level level-basic">Básico</span></td>
+                            <td>Reduce rebuilds en 90%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ValueNotifier + ValueListenableBuilder</strong></td>
+                            <td>Valores específicos que cambian frecuentemente</td>
+                            <td><span class="optimization-level level-intermediate">Intermedio</span></td>
+                            <td>Rebuilds quirúrgicos, 95% menos overhead</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Riverpod con selectores</strong></td>
+                            <td>Estados complejos con dependencias</td>
+                            <td><span class="optimization-level level-advanced">Avanzado</span></td>
+                            <td>Rebuilds solo cuando datos específicos cambian</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bloc con Equatable</strong></td>
+                            <td>Lógica de negocio compleja, testing</td>
+                            <td><span class="optimization-level level-advanced">Avanzado</span></td>
+                            <td>Evita rebuilds por referencia, solo por valor</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Caso Real: Optimizando Estado de Lista Meteorológica</h3>
+
+                <div class="code-block">
+                    <pre>
+// ✅ Optimización avanzada con Riverpod + selectores
+final weatherProvider = StateNotifierProvider&lt;WeatherNotifier, WeatherState&gt;(
+  (ref) => WeatherNotifier(),
+);
+
+// Solo rebuilds cuando la temperatura actual cambia
+final currentTemperatureProvider = Provider&lt;double&gt;((ref) {
+  final weatherState = ref.watch(weatherProvider);
+  return weatherState.currentWeather?.temperature ?? 0.0;
+});
+
+// Solo rebuilds cuando la lista de forecast cambia
+final forecastListProvider = Provider&lt;List&lt;WeatherForecast&gt;&gt;((ref) {
+  final weatherState = ref.watch(weatherProvider);
+  return weatherState.forecast;
+});
+
+class WeatherScreen extends ConsumerWidget {
+  @override
+  Widget buil

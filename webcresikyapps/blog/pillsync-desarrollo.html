@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrollando Apps de Salud: Lecciones de PillSync - CreiskyApps Blog</title>
+    <meta name="description" content="Los desafíos únicos del desarrollo de aplicaciones médicas, desde la privacidad de datos hasta el diseño centrado en la accesibilidad para usuarios de todas las edades.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://creiskyapps.vercel.app/blog/pillsync-desarrollo.html">
+    <meta property="og:title" content="Desarrollando Apps de Salud: Lecciones de PillSync">
+    <meta property="og:description" content="Insights sobre desarrollo de aplicaciones médicas, privacidad de datos y diseño accesible.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://creiskyapps.vercel.app/blog/pillsync-desarrollo.html">
+    <meta property="twitter:title" content="Desarrollando Apps de Salud: Lecciones de PillSync">
+    <meta property="twitter:description" content="Insights sobre desarrollo de aplicaciones médicas, privacidad de datos y diseño accesible.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #1e40af;
+            --accent-turquoise: #06b6d4;
+            --dark-blue: #1e293b;
+            --light-gray: #f8fafc;
+            --medium-gray: #64748b;
+            --white: #ffffff;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--dark-blue);
+            background-color: var(--white);
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-primary);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .rocket-icon {
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 2rem 4rem;
+        }
+
+        .article-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .article-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            line-height: 1.6;
+        }
+
+        .article-content {
+            font-size: 1.125rem;
+            line-height: 1.8;
+        }
+
+        .article-content h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            color: var(--dark-blue);
+            position: relative;
+        }
+
+        .article-content h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -0.5rem;
+            width: 50px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
+
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--dark-blue);
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.75rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            border-left: 4px solid var(--primary-blue);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            border-left: 4px solid var(--warning-orange);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .code-block {
+            background: var(--dark-blue);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--dark-blue);
+        }
+
+        .feature-description {
+            color: var(--medium-gray);
+            font-size: 0.95rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-box {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .article-footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--light-gray);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .author-details h4 {
+            color: var(--dark-blue);
+            font-weight: 600;
+        }
+
+        .author-details p {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .cta-section {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .cta-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 2rem;
+            background: var(--white);
+            color: var(--primary-blue);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 100px 1rem 3rem;
+            }
+
+            .article-title {
+                font-size: 2.25rem;
+            }
+
+            .article-content {
+                font-size: 1rem;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-container {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .article-title {
+                font-size: 1.875rem;
+            }
+
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .author-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../creiskyapps_website.html" class="logo">
+                <div class="logo-icon">
+                    <span class="rocket-icon">🚀</span>
+                </div>
+                CreiskyApps
+            </a>
+            <a href="../creiskyapps_website.html#blog" class="back-btn">
+                <span>←</span>
+                Volver al Blog
+            </a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <article>
+            <header class="article-header">
+                <div class="article-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        8 de Enero, 2025
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        12 min de lectura
+                    </div>
+                    <div class="meta-item">
+                        <span>🏷️</span>
+                        Salud, Flutter, UX
+                    </div>
+                </div>
+                <h1 class="article-title">Desarrollando Apps de Salud: Lecciones de PillSync</h1>
+                <p class="article-subtitle">
+                    Los desafíos únicos del desarrollo de aplicaciones médicas, desde la privacidad de datos 
+                    hasta el diseño centrado en la accesibilidad para usuarios de todas las edades.
+                </p>
+            </header>
+
+            <div class="article-content">
+                <p>
+                    Cuando comencé el desarrollo de <strong>PillSync</strong>, pensé que sería como cualquier otra aplicación de recordatorios. 
+                    Qué equivocado estaba. Las aplicaciones de salud presentan desafíos únicos que van mucho más allá de la programación 
+                    tradicional: desde consideraciones éticas hasta diseño inclusivo para usuarios de 8 a 80 años.
+                </p>
+
+                <div class="highlight-box">
+                    <p><strong>💡 Insight clave:</strong> En aplicaciones de salud, el fracaso del software no es solo un bug - 
+                    puede tener consecuencias reales en la vida de las personas. Esta responsabilidad cambia completamente tu enfoque de desarrollo.</p>
+                </div>
+
+                <h2>El Reto de la Diversidad de Usuarios</h2>
+
+                <p>
+                    A diferencia de aplicaciones dirigidas a millennials o Gen Z, las apps de salud deben funcionar para un rango demográfico extremadamente amplio. 
+                    PillSync es usada tanto por jóvenes con medicación crónica como por adultos mayores con múltiples prescripciones.
+                </p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">👦</div>
+                        <div class="feature-title">Usuarios Jóvenes</div>
+                        <div class="feature-description">Esperan interfaces modernas, gestos intuitivos y gamificación</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👨‍💼</div>
+                        <div class="feature-title">Adultos Activos</div>
+                        <div class="feature-description">Necesitan eficiencia, integración con calendarios y automatización</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👵</div>
+                        <div class="feature-title">Adultos Mayores</div>
+                        <div class="feature-description">Requieren textos grandes, contraste alto y simplicidad máxima</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏥</div>
+                        <div class="feature-title">Cuidadores</div>
+                        <div class="feature-description">Manejan medicación de múltiples personas, necesitan reportes claros</div>
+                    </div>
+                </div>
+
+                <h3>Decisiones de Diseño Inclusivo</h3>
+
+                <p>Para abordar esta diversidad, implementé un sistema de <strong>adaptabilidad progresiva</strong> en PillSync:</p>
+
+                <ul>
+                    <li><strong>Tipografía escalable:</strong> Desde 14px hasta 24px sin romper el diseño</li>
+                    <li><strong>Modo de contraste alto:</strong> Automático basado en configuraciones del sistema</li>
+                    <li><strong>Navegación dual:</strong> Gestos modernos + botones tradicionales siempre visibles</li>
+                    <li><strong>Feedback múltiple:</strong> Visual, auditivo y táctil para cada acción importante</li>
+                </ul>
+
+                <h2>Arquitectura de Datos: Privacidad por Diseño</h2>
+
+                <p>
+                    Los datos de salud son los más sensibles que existen. Desde el primer día, diseñé PillSync con 
+                    <strong>privacy by design</strong>, implementando múltiples capas de protección:
+                </p>
+
+                <div class="code-block">
+                    <pre>
+// Ejemplo de encriptación local en Flutter
+class SecureHealthStorage {
+  static const String _keyAlias = 'pillsync_master_key';
+  
+  Future&lt;void&gt; storeMedication(Medication med) async {
+    final encryptedData = await _encryptLocally(med.toJson());
+    await _localDB.store(med.id, encryptedData);
+    
+    // NO almacenamos en cloud por defecto
+    // Usuario debe optar explícitamente
+  }
+  
+  Future&lt;String&gt; _encryptLocally(String data) async {
+    final key = await _getOrCreateKey();
+    return AESEncryption.encrypt(data, key);
+  }
+}
+                    </pre>
+                </div>
+
+                <div class="warning-box">
+                    <p><strong>⚠️ Lección aprendida:</strong> Nunca asumas que los usuarios quieren sincronización en la nube. 
+                    Muchos prefieren mantener sus datos médicos completamente locales, incluso si eso significa perder 
+                    funcionalidades como backup automático.</p>
+                </div>
+
+                <h3>Estrategia de Almacenamiento Híbrida</h3>
+
+                <p>Implementé un sistema que respeta las preferencias del usuario:</p>
+
+                <ul>
+                    <li><strong>Local por defecto:</strong> Todos los datos se almacenan localmente con encriptación AES-256</li>
+                    <li><strong>Cloud opcional:</strong> El usuario puede activar sincronización después de leer términos específicos</li>
+                    <li><strong>Anonimización:</strong> Si eligen cloud, los datos se anonimizan antes del envío</li>
+                    <li><strong>Exportación libre:</strong> Los usuarios pueden exportar sus datos en cualquier momento</li>
+                </ul>
+
+                <h2>UX Challenges: Recordatorios Inteligentes</h2>
+
+                <p>
+                    El corazón de PillSync son los recordatorios adaptativos. Pero crear notificaciones que ayuden sin molestar 
+                    es un ejercicio de equilibrio extremo.
+                </p>
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-number">73%</div>
+                        <div class="stat-label">De usuarios activos después de 3 meses</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">94%</div>
+                        <div class="stat-label">De adherencia promedio a medicación</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">2.1</div>
+                        <div class="stat-label">Notificaciones promedio por día</div>
+                    </div>
+                </div>
+
+                <h3>Algoritmo de Recordatorios Adaptativos</h3>
+
+                <p>Desarrollé un sistema que aprende de los patrones del usuario:</p>
+
+                <div class="code-block">
+                    <pre>
+class AdaptiveReminderEngine {
+  // Analiza patrones de toma durante 2 semanas
+  Future&lt;TimeSlot&gt; optimizeReminderTime(Medication med) async {
+    final userHistory = await _getUserTakeHistory(med.id);
+    final patterns = _analyzeTimePatterns(userHistory);
+    
+    // Factores considerados:
+    // - Hora promedio de toma real vs programada
+    // - Días de la semana con mejor adherencia  
+    // - Contexto (desayuno, trabajo, cena)
+    // - Retrasos frecuentes
+    
+    return _calculateOptimalTime(patterns);
+  }
+  
+  Future&lt;ReminderStrategy&gt; personalizeReminders(User user) async {
+    if (user.isElderly()) {
+      return SimpleStrategy(); // Menos frecuencia, más directos
+    } else if (user.isBusy()) {
+      return AdaptiveStrategy(); // Se ajusta a rutina
+    } else {
+      return GamifiedStrategy(); // Streaks y logros
+    }
+  }
+}
+                    </pre>
+                </div>
+
+                <h2>Compliance y Regulaciones</h2>
+
+                <p>
+                    Aunque PillSync no es un dispositivo médico, opera en un espacio regulado. Tuve que navegar por:
+                </p>
+
+                <ul>
+                    <li><strong>GDPR/RGPD:</strong> Consentimiento explícito para cada tipo de procesamiento</li>
+                    <li><strong>HIPAA considerations:</strong> Aunque no aplica directamente, adopté sus estándares</li>
+                    <li><strong>Disclaimers claros:</strong> La app no sustituye consulta médica profesional</li>
+                    <li><strong>Transparencia algorítmica:</strong> Los usuarios pueden ver por qué se sugiere cada horario</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <p><strong>💡 Tip práctico:</strong> Incluye disclaimers desde el onboarding, no solo en términos y condiciones. 
+                    Los usuarios deben entender claramente qué hace y qué NO hace tu aplicación de salud.</p>
+                </div>
+
+                <h2>Testing con Usuarios Reales</h2>
+
+                <p>
+                    Testé PillSync con un grupo diverso de 50 usuarios durante 6 meses. Los insights fueron reveladores:
+                </p>
+
+                <h3>Descubrimientos Clave</h3>
+
+                <ul>
+                    <li><strong>Los recordatorios "cute" molestan:</strong> Emojis y gamificación excesiva generan rechazo en usuarios mayores</li>
+                    <li><strong>La familia importa:</strong> 40% de usuarios quería compartir progreso con familiares</li>
+                    <li><strong>Contexto es crucial:</strong> Recordatorios durante reuniones o madrugadas generan abandono</li>
+                    <li><strong>Offline first:</strong> Internet inestable no debe impedir el funcionamiento básico</li>
+                </ul>
+
+                <h2>Métricas que Realmente Importan</h2>
+
+                <p>
+                    En apps de salud, las métricas tradicionales (DAU, retention) no cuentan toda la historia. 
+                    Lo que realmente importa es el <strong>impacto en salud real</strong>:
+                </p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Adherencia Medicamentosa</div>
+                        <div class="feature-description">% de dosis tomadas en horario correcto</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">😊</div>
+                        <div class="feature-title">Satisfacción del Usuario</div>
+                        <div class="feature-description">¿La app mejora o complica su rutina?</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏥</div>
+                        <div class="feature-title">Feedback Médico</div>
+                        <div class="feature-description">Reportes útiles para profesionales</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔄</div>
+                        <div class="feature-title">Sostenibilidad de Uso</div>
+                        <div class="feature-description">Uso continuado sin fatiga</div>
+                    </div>
+                </div>
+
+                <h2>Lecciones para el Futuro</h2>
+
+                <p>
+                    Desarrollar PillSync me enseñó que las aplicaciones de salud son fundamentalmente diferentes. 
+                    No se trata solo de código elegante o UI bonita - se trata de crear herramientas que realmente 
+                    mejoren la calidad de vida de las personas.
+                </p>
+
+                <p>
+                    <strong>Si estás considerando desarrollar una app de salud, mi consejo principal es:</strong> 
+                    empieza pequeño, testea con usuarios reales desde el día uno, y nunca olvides que estás 
+                    trabajando con los datos más preciados que tiene una persona.
+                </p>
+
+                <div class="cta-section">
+                    <h3 class="cta-title">¿Desarrollando una App de Salud?</h3>
+                    <p class="cta-text">
+                        Si estás trabajando en una aplicación de salud y necesitas consultoría técnica 
+                        o quieres discutir desafíos específicos, me encantaría ayudarte.
+                    </p>
+                    <a href="../creiskyapps_website.html#contacto" class="btn">
+                        <span>💬</span>
+                        Hablemos de tu Proyecto
+                    </a>
+                </div>
+            </div>
+
+            <footer class="article-footer">
+                <div class="author-info">
+                    <div class="author-avatar">👨‍💻</div>
+                    <div class="author-details">
+                        <h4>CreiskyApps Developer</h4>
+                        <p>Especialista en Flutter y aplicaciones de salud</p>
+                    </div>
+                </div>
+                <p>
+                    ¿Te ha gustado este artículo? Compártelo con otros desarrolladores que estén 
+                    interesados en el desarrollo de aplicaciones médicas.
+                </p>
+            </footer>
+        </article>
+    </main>
+
+    <script>
+        // Smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Reading progress indicator
+        function updateReadingProgress() {
+            const article = document.querySelector('article');
+            const scrolled = window.scrollY;
+            const articleHeight = article.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const progress = Math.min(scrolled / (articleHeight - windowHeight), 1);
+            
+            // Create progress bar if it doesn't exist
+            let progressBar = document.querySelector('.reading-progress');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'reading-progress';
+                progressBar.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    height: 3px;
+                    background: var(--gradient-primary);
+                    z-index: 1001;
+                    transition: width 0.1s ease;
+                `;
+                document.body.appendChild(progressBar);
+            }
+            
+            progressBar.style.width = `${progress * 100}%`;
+        }
+
+        window.addEventListener('scroll', updateReadingProgress);
+        updateReadingProgress(); // Initial call
+    </script>
+</body>
+</html>
