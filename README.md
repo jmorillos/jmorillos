@@ -10,6 +10,6 @@
   - 🌐 X (Twitter): https://x.com/JuanMorillios
 
 🚀 **Featured & Ongoing Projects:**
-- **Apps:** [Dopa Doom](https://dopa-doom-app.vercel.app/es), [Poka Pure](https://www.pokapure.com/es), [Kauf](https://www.getkauf.com/es), [Bloom](https://bloomprivate.com/), [PillSync](https://pillsync.vercel.app/), Borealis Clima.
+- **Apps:** [Dopa Doom](https://dopa-doom-app.vercel.app/es), [Poka Pure](https://www.pokapure.com/es), [Kauf](https://www.getkauf.com/es), [Bloom](https://bloomprivate.com/), [PillSync](https://pillsync.vercel.app/), [Borealis Clima](https://play.google.com/store/apps/details?id=com.creiskyapps.borealisclima).
 - **Web:** [Taxi Híbrido Aeropuerto](https://www.taxihybridaeropuerto.com/), [Deltransa](https://deltransa.com/).
 
